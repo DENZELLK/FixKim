@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FixNC Citizen Prototype</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -619,117 +619,195 @@
             cursor: pointer;
             z-index: 10;
         }
+
+        .camera-error {
+            display: none;
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+        }
+
+        .camera-error.show {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
         /* Good button styles */
         /* Target ALL Apply Now buttons */
-.apply-now-btn {
-  display: block;           /* Makes button respect width */
-  width: 100%;              /* Full width of parent */
-  background: #861703;      /* Maroon background */
-  color: white;             /* White text for contrast */
-  padding: 0.5rem 1rem;     /* py-2 px-4 equivalent */
-  border-radius: 0.5rem;    /* rounded-lg (8px) */
-  font-weight: 500;         /* font-medium */
-  border: none;             /* Remove default border */
-  cursor: pointer;          /* Show pointer on hover */
-  transition: background 0.2s ease; /* Smooth hover effect */
+        .apply-now-btn {
+            display: block;           /* Makes button respect width */
+            width: 100%;              /* Full width of parent */
+            background: #861703;      /* Maroon background */
+            color: white;             /* White text for contrast */
+            padding: 0.5rem 1rem;     /* py-2 px-4 equivalent */
+            border-radius: 0.5rem;    /* rounded-lg (8px) */
+            font-weight: 500;         /* font-medium */
+            border: none;             /* Remove default border */
+            cursor: pointer;          /* Show pointer on hover */
+            transition: background 0.2s ease; /* Smooth hover effect */
+        }
+
+        /* Hover state */
+        .apply-now-btn:hover {
+            background: #6a1202;      /* Darker maroon */
+        }
+
+        /* Focus state (accessibility) */
+        .apply-now-btn:focus {
+            outline: none;            /* Remove default outline */
+            box-shadow: 0 0 0 3px rgba(134, 23, 3, 0.3); /* Focus ring */
+        }
+
+        /* ===== Base Button Styles ===== */
+        /* Form Submission - Submit Application */
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0.5rem 0;
+            
+            /* Unique styles */
+            background: #1a5c1a;
+            color: white;
+            border: none;
+        }
+
+        .submit-btn:hover {
+            background: #134713;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .submit-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 92, 26, 0.3);
+        }
+
+        /* Secondary Action - Cancel */
+        .cancel-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0.5rem 0;
+            
+            /* Unique styles */
+            background: transparent;
+            color: #861703;
+            border: 2px solid #861703;
+        }
+
+        .cancel-btn:hover {
+            background: rgba(134, 23, 3, 0.05);
+        }
+
+        .cancel-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(134, 23, 3, 0.2);
+        }
+
+        /* Navigation - Back to Programs */
+        .back-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0.5rem 0;
+            
+            /* Unique styles */
+            background: #333;
+            color: white;
+            border: none;
+        }
+
+        .back-btn:hover {
+            background: #222;
+        }
+
+        .back-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.3);
+        }
+
+        /* Base button styles */
+.camera-control-btn,
+.submit-report-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
 }
 
-/* Hover state */
-.apply-now-btn:hover {
-  background: #6a1202;      /* Darker maroon */
+/* Camera control button specific styles */
+.camera-control-btn {
+    background: #861703;
+    color: white;
+    min-width: 150px;
 }
 
-/* Focus state (accessibility) */
-.apply-now-btn:focus {
-  outline: none;            /* Remove default outline */
-  box-shadow: 0 0 0 3px rgba(134, 23, 3, 0.3); /* Focus ring */
+.camera-control-btn:hover {
+    background: #6a1202;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-
-  /* ===== Base Button Styles ===== */
-/* Form Submission - Submit Application */
-.submit-btn {
-  display: block;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin: 0.5rem 0;
-  
-  /* Unique styles */
-  background: #1a5c1a;
-  color: white;
-  border: none;
+.camera-control-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(134, 23, 3, 0.3);
 }
 
-.submit-btn:hover {
-  background: #134713;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+/* Submit report button specific styles */
+.submit-report-btn {
+    width: 100%;
+    background: #861703;
+    color: white;
+    padding: 0.75rem;
+    font-weight: bold;
+    margin-top: 1rem;
 }
 
-.submit-btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(26, 92, 26, 0.3);
+.submit-report-btn:hover {
+    background: #6a1202;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* Secondary Action - Cancel */
-.cancel-btn {
-  display: block;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin: 0.5rem 0;
-  
-  /* Unique styles */
-  background: transparent;
-  color: #861703;
-  border: 2px solid #861703;
+.submit-report-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(134, 23, 3, 0.3);
 }
 
-.cancel-btn:hover {
-  background: rgba(134, 23, 3, 0.05);
+/* Disabled state */
+.camera-control-btn:disabled,
+.submit-report-btn:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
-
-.cancel-btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(134, 23, 3, 0.2);
-}
-
-/* Navigation - Back to Programs */
-.back-btn {
-  display: block;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin: 0.5rem 0;
-  
-  /* Unique styles */
-  background: #333;
-  color: white;
-  border: none;
-}
-
-.back-btn:hover {
-  background: #222;
-}
-
-.back-btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.3);
-}
-
-        
     </style>
 </head>
 <body class="bg-gray-100">
@@ -813,7 +891,7 @@
                     <div class="camera-container mb-4">
                         <div id="flash" class="flash-effect"></div>
                         <video id="video-preview" class="video-preview hidden" autoplay playsinline></video>
-                        <canvas id="photo-canvas" class="photo-canvas"></canvas>
+                        <canvas id="photo-canvas" class="photo-canvas hidden"></canvas>
                         
                         <div id="gps-indicator" class="gps-indicator hidden">
                             <i class="fas fa-map-marker-alt"></i>
@@ -821,7 +899,7 @@
                         </div>
                         
                         <div class="camera-controls">
-                            <button id="capture-btn" class="capture-btn hidden pulse-animation">
+                            <button id="capture-btn" class="capture-btn hidden">
                                 <div class="capture-btn-inner"></div>
                             </button>
                         </div>
@@ -831,26 +909,30 @@
                         </button>
                     </div>
                     
-                    <div class="flex gap-4 mb-4">
-                        <button id="start-camera-btn" class="bg-[#861703] text-white px-4 py-2 rounded-lg hover:bg-[#6a1202] transition flex items-center">
-                            <i class="fas fa-camera mr-2"></i> Start Camera
-                        </button>
+                            <div class="flex flex-wrap gap-4 mb-4">
+    <button id="start-camera-btn" class="camera-control-btn">
+        <i class="fas fa-camera mr-2"></i> Start Camera
+    </button>
                         
-                        <button id="capture-photo-btn" class="bg-[#861703] text-white px-4 py-2 rounded-lg hover:bg-[#6a1202] transition hidden flex items-center">
-                            <i class="fas fa-camera-retro mr-2"></i> Take Photo
-                        </button>
-                    </div>
+    <button id="capture-photo-btn" class="camera-control-btn hidden">
+        <i class="fas fa-camera-retro mr-2"></i> Take Photo
+    </button>
+</div>
                     
                     <div id="max-images-notice" class="max-images-notice hidden">
                         <i class="fas fa-info-circle mr-2"></i> You've reached the maximum of 5 photos
                     </div>
                     
+                    <div id="camera-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        <p id="camera-error-message"></p>
+                    </div>
+                    
                     <div id="image-gallery" class="gallery-container"></div>
                 </div>
                 
-                <button id="submit-issue-btn" class="w-full bg-[#861703] text-white py-3 rounded-lg font-bold hover:bg-[#6a1202] transition flex items-center justify-center">
-                    <i class="fas fa-paper-plane mr-2"></i> Submit Report
-                </button>
+                <button id="submit-issue-btn" class="submit-report-btn">
+    <i class="fas fa-paper-plane mr-2"></i> Submit Report
+</button>
             </div>
         </div>
 
@@ -943,520 +1025,494 @@
         </div>
 
         <div id="submissions-section" class="section hidden p-6 bg-gray-50 rounded-xl">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">My Submissions</h1>
-        <button id="refresh-submissions" class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
-            <i class="fas fa-sync-alt"></i> Refresh
-        </button>
-    </div>
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">My Submissions</h1>
+                <button id="refresh-submissions" class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
 
-    <div class="space-y-4" id="submissions-list">
-        <!-- Pothole Report Submission -->
-        <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#861703] hover:shadow-md transition">
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <div class="flex items-center space-x-3">
-                        <div class="text-[#861703]">
-                            <i class="fas fa-road text-lg"></i>
+            <div class="space-y-4" id="submissions-list">
+                <!-- Pothole Report Submission -->
+                <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#861703] hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-[#861703]">
+                                    <i class="fas fa-road text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Pothole Report</h3>
+                                    <p class="text-gray-600 text-sm">Location: Main Street, Kimberley</p>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex flex-wrap items-center gap-2">
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                    <i class="fas fa-check-circle mr-1"></i> Resolved
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    <i class="far fa-clock mr-1"></i> Reported on 15 Jun 2023
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    <i class="fas fa-calendar-check mr-1"></i> Resolved on 20 Jun 2023
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Pothole Report</h3>
-                            <p class="text-gray-600 text-sm">Location: Main Street, Kimberley</p>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-400 hover:text-[#861703]" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-[#861703]" title="Share">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="mt-3 flex flex-wrap items-center gap-2">
-                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                            <i class="fas fa-check-circle mr-1"></i> Resolved
-                        </span>
-                        <span class="text-xs text-gray-500">
-                            <i class="far fa-clock mr-1"></i> Reported on 15 Jun 2023
-                        </span>
-                        <span class="text-xs text-gray-500">
-                            <i class="fas fa-calendar-check mr-1"></i> Resolved on 20 Jun 2023
-                        </span>
+                    <div class="mt-3">
+                        <img src="https://iili.io/Fha8Ojp.md.jpg" class="w-full h-32 object-cover rounded-lg cursor-pointer" alt="Pothole photo">
                     </div>
                 </div>
-                <div class="flex space-x-2">
-                    <button class="text-gray-400 hover:text-[#861703]" title="View Details">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="text-gray-400 hover:text-[#861703]" title="Share">
-                        <i class="fas fa-share-alt"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="mt-3">
-                <img src="https://iili.io/Fha8Ojp.md.jpg" class="w-full h-32 object-cover rounded-lg cursor-pointer" alt="Pothole photo">
-            </div>
-        </div>
 
-        <!-- Housing Application Submission -->
-        <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 hover:shadow-md transition">
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <div class="flex items-center space-x-3">
-                        <div class="text-blue-500">
-                            <i class="fas fa-home text-lg"></i>
+                <!-- Housing Application Submission -->
+                <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-blue-500">
+                                    <i class="fas fa-home text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Housing Assistance Application</h3>
+                                    <p class="text-gray-600 text-sm">Reference: APP-20230614-001</p>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex flex-wrap items-center gap-2">
+                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                                    <i class="fas fa-hourglass-half mr-1"></i> Under Review
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    <i class="far fa-clock mr-1"></i> Submitted on 14 Jun 2023
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    <i class="fas fa-user-clock mr-1"></i> Estimated response: 7-10 days
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Housing Assistance Application</h3>
-                            <p class="text-gray-600 text-sm">Reference: APP-20230614-001</p>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-400 hover:text-blue-500" title="Check Status">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-blue-500" title="Upload Documents">
+                                <i class="fas fa-upload"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="mt-3 flex flex-wrap items-center gap-2">
-                        <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-                            <i class="fas fa-hourglass-half mr-1"></i> Under Review
-                        </span>
-                        <span class="text-xs text-gray-500">
-                            <i class="far fa-clock mr-1"></i> Submitted on 14 Jun 2023
-                        </span>
-                        <span class="text-xs text-gray-500">
-                            <i class="fas fa-user-clock mr-1"></i> Estimated response: 7-10 days
-                        </span>
+                    <div class="mt-3">
+                        <div class="flex items-center text-xs text-gray-500">
+                            <i class="fas fa-file-pdf mr-1 text-red-500"></i>
+                            <span>application_form.pdf</span>
+                            <span class="ml-2">• 2.4MB</span>
+                        </div>
                     </div>
                 </div>
-                <div class="flex space-x-2">
-                    <button class="text-gray-400 hover:text-blue-500" title="Check Status">
-                        <i class="fas fa-info-circle"></i>
-                    </button>
-                    <button class="text-gray-400 hover:text-blue-500" title="Upload Documents">
-                        <i class="fas fa-upload"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="mt-3">
-                <div class="flex items-center text-xs text-gray-500">
-                    <i class="fas fa-file-pdf mr-1 text-red-500"></i>
-                    <span>application_form.pdf</span>
-                    <span class="ml-2">• 2.4MB</span>
-                </div>
-            </div>
-        </div>
 
-        <!-- Water Service Request -->
-        <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500 hover:shadow-md transition">
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <div class="flex items-center space-x-3">
-                        <div class="text-green-500">
-                            <i class="fas fa-tint text-lg"></i>
+                <!-- Water Service Request -->
+                <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-green-500">
+                                    <i class="fas fa-tint text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Water Service Request</h3>
+                                    <p class="text-gray-600 text-sm">Account #: WS-789456123</p>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex flex-wrap items-center gap-2">
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                    <i class="fas fa-tools mr-1"></i> In Progress
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    <i class="far fa-clock mr-1"></i> Submitted on 10 Jun 2023
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    <i class="fas fa-user-hard-hat mr-1"></i> Technician assigned
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Water Service Request</h3>
-                            <p class="text-gray-600 text-sm">Account #: WS-789456123</p>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-400 hover:text-green-500" title="Contact Support">
+                                <i class="fas fa-headset"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-green-500" title="Cancel Request">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="mt-3 flex flex-wrap items-center gap-2">
-                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                            <i class="fas fa-tools mr-1"></i> In Progress
-                        </span>
-                        <span class="text-xs text-gray-500">
-                            <i class="far fa-clock mr-1"></i> Submitted on 10 Jun 2023
-                        </span>
-                        <span class="text-xs text-gray-500">
-                            <i class="fas fa-user-hard-hat mr-1"></i> Technician assigned
-                        </span>
-                    </div>
                 </div>
-                <div class="flex space-x-2">
-                    <button class="text-gray-400 hover:text-green-500" title="Contact Support">
-                        <i class="fas fa-headset"></i>
-                    </button>
-                    <button class="text-gray-400 hover:text-green-500" title="Cancel Request">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
 
-        <!-- Business Grant Application -->
-        <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-purple-500 hover:shadow-md transition">
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <div class="flex items-center space-x-3">
-                        <div class="text-purple-500">
-                            <i class="fas fa-store text-lg"></i>
+                <!-- Business Grant Application -->
+                <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-purple-500 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-purple-500">
+                                    <i class="fas fa-store text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Small Business Grant</h3>
+                                    <p class="text-gray-600 text-sm">Business: Kimberley Fresh Produce</p>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex flex-wrap items-center gap-2">
+                                <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> Additional Info Required
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    <i class="far fa-clock mr-1"></i> Submitted on 5 Jun 2023
+                                </span>
+                                <span class="text-xs text-[#861703] font-medium">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i> Response needed by 25 Jun
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Small Business Grant</h3>
-                            <p class="text-gray-600 text-sm">Business: Kimberley Fresh Produce</p>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-400 hover:text-purple-500" title="View Request">
+                                <i class="fas fa-file-alt"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-purple-500" title="Submit Documents">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="mt-3 flex flex-wrap items-center gap-2">
-                        <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                            <i class="fas fa-exclamation-circle mr-1"></i> Additional Info Required
-                        </span>
-                        <span class="text-xs text-gray-500">
-                            <i class="far fa-clock mr-1"></i> Submitted on 5 Jun 2023
-                        </span>
-                        <span class="text-xs text-[#861703] font-medium">
-                            <i class="fas fa-exclamation-triangle mr-1"></i> Response needed by 25 Jun
-                        </span>
+                    <div class="mt-2 text-xs text-[#861703] bg-[#f0e6e6] p-2 rounded">
+                        <i class="fas fa-info-circle mr-1"></i> Please submit your business license by 25 Jun to avoid cancellation
                     </div>
-                </div>
-                <div class="flex space-x-2">
-                    <button class="text-gray-400 hover:text-purple-500" title="View Request">
-                        <i class="fas fa-file-alt"></i>
-                    </button>
-                    <button class="text-gray-400 hover:text-purple-500" title="Submit Documents">
-                        <i class="fas fa-paperclip"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="mt-2 text-xs text-[#861703] bg-[#f0e6e6] p-2 rounded">
-                <i class="fas fa-info-circle mr-1"></i> Please submit your business license by 25 Jun to avoid cancellation
-            </div>
-        </div>
-    </div>
-
-    <div class="mt-6 text-center">
-        <button class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
-            <i class="fas fa-history"></i> View Submission History
-        </button>
-    </div>
-</div>
-
-          <div id="programs-section" class="section hidden">
-    <div class="max-w-3xl mx-auto">
-        <h1 class="text-2xl font-bold mb-6 text-gray-800">Available Programs</h1>
-        
-        <!-- Program Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <!-- Program 1 - Housing Assistance -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
-                <div class="p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="bg-[#861703] text-white p-3 rounded-lg mr-4">
-                            <i class="fas fa-home text-xl"></i>
-                        </div>
-                        <h2 class="text-xl font-semibold">Housing Assistance</h2>
-                    </div>
-                    <p class="text-gray-600 mb-4">Apply for government housing assistance and subsidies for low-income families in Kimberley.</p>
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Housing</span>
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Subsidy</span>
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Low-income</span>
-                    </div>
-                    <div class="mb-4">
-                        <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
-                        <ul class="list-disc pl-5 text-sm text-gray-600">
-                            <li>South African ID</li>
-                            <li>Proof of income</li>
-                            <li>Proof of residence</li>
-                            <li>Bank statement</li>
-                        </ul>
-                    </div>
-                             <button 
-  onclick="showApplicationForm('housing')"
-  class="apply-now-btn"  
->
-  Apply Now
-</button>
                 </div>
             </div>
 
-            <!-- Program 2 - Water Subsidy -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
-                <div class="p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="bg-blue-600 text-white p-3 rounded-lg mr-4">
-                            <i class="fas fa-tint text-xl"></i>
-                        </div>
-                        <h2 class="text-xl font-semibold">Water Subsidy</h2>
-                    </div>
-                    <p class="text-gray-600 mb-4">Financial assistance for water bills for qualifying households in drought-affected areas.</p>
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Utility</span>
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Water</span>
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Subsidy</span>
-                    </div>
-                    <div class="mb-4">
-                        <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
-                        <ul class="list-disc pl-5 text-sm text-gray-600">
-                            <li>South African ID</li>
-                            <li>Recent water bill</li>
-                            <li>Proof of income</li>
-                        </ul>
-                    </div>
-                    <button onclick="showApplicationForm('water')"
-  class="apply-now-btn"  
->
-  Apply Now
-</button>
-                </div>
-            </div>
-
-            <!-- Program 3 - Youth Employment -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
-                <div class="p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="bg-green-600 text-white p-3 rounded-lg mr-4">
-                            <i class="fas fa-briefcase text-xl"></i>
-                        </div>
-                        <h2 class="text-xl font-semibold">Youth Employment</h2>
-                    </div>
-                    <p class="text-gray-600 mb-4">Job placement and training program for unemployed youth (18-35 years).</p>
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Employment</span>
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Training</span>
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Youth</span>
-                    </div>
-                    <div class="mb-4">
-                        <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
-                        <ul class="list-disc pl-5 text-sm text-gray-600">
-                            <li>South African ID</li>
-                            <li>Matric certificate</li>
-                            <li>Proof of unemployment</li>
-                            <li>CV/resume</li>
-                        </ul>
-                    </div>
-                  <button onclick="showApplicationForm('youth')"
-  class="apply-now-btn"  
->
-  Apply Now
-</button>
-                </div>
-            </div>
-
-            <!-- Program 4 - Small Business Grant -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
-                <div class="p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="bg-purple-600 text-white p-3 rounded-lg mr-4">
-                            <i class="fas fa-store text-xl"></i>
-                        </div>
-                        <h2 class="text-xl font-semibold">Small Business Grant</h2>
-                    </div>
-                    <p class="text-gray-600 mb-4">Funding and support for local entrepreneurs and small businesses.</p>
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Business</span>
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Funding</span>
-                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Entrepreneur</span>
-                    </div>
-                    <div class="mb-4">
-                        <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
-                        <ul class="list-disc pl-5 text-sm text-gray-600">
-                            <li>South African ID</li>
-                            <li>Business plan</li>
-                            <li>Company registration documents</li>
-                            <li>Financial statements</li>
-                        </ul>
-                    </div>
-                    <button  onclick="showApplicationForm('Business')"
-  class="apply-now-btn"  
->
-  Apply Now
-</button>
-                </div>
+            <div class="mt-6 text-center">
+                <button class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
+                    <i class="fas fa-history"></i> View Submission History
+                </button>
             </div>
         </div>
 
-        <!-- Application Form (hidden by default) -->
-        <div id="application-form" class="hidden bg-white rounded-xl shadow-md p-6 mb-8">
-            <h2 class="text-xl font-bold mb-4" id="application-title">Application Form</h2>
-            <form id="program-application-form">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-name">
-                        Full Name
-                    </label>
-                    <input type="text" id="applicant-name" class="w-full p-2 border rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-id">
-                        South African ID Number
-                    </label>
-                    <input type="text" id="applicant-id" class="w-full p-2 border rounded" required>
-                    <p class="text-xs text-gray-500 mt-1">13-digit ID number without spaces</p>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-email">
-                        Email Address
-                    </label>
-                    <input type="email" id="applicant-email" class="w-full p-2 border rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-phone">
-                        Phone Number
-                    </label>
-                    <input type="tel" id="applicant-phone" class="w-full p-2 border rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-documents">
-                        Required Documents
-                    </label>
-                    <div id="required-docs" class="mb-2 text-sm text-gray-600"></div>
-                    <input type="file" id="applicant-documents" class="w-full p-2 border rounded" multiple required>
-                    <p class="text-xs text-gray-500 mt-1">PDF, JPG, or PNG files only (max 5MB each)</p>
-                </div>
-                <div class="flex justify-end gap-4">
-
-                     <button 
-                      type="button" 
-                      onclick="hideApplicationForm()" 
-                      class="cancel-btn"
-                      >
-                      Cancel
-                      </button>
-
-
-                    <button 
-                    type="submit" 
-                    class="submit-btn" 
-                    >
-                    Submit Application
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Application Status -->
-        <div id="application-status" class="hidden bg-white rounded-xl shadow-md p-6">
-            <h2 class="text-xl font-bold mb-4">Application Status</h2>
-            <div id="status-message" class="mb-4"></div>
-              
-            <button 
-            onclick="hideStatusMessage()" 
-            class="back-btn"  
-            >
-            Back to Programs
-            </button>
-        </div>
-    </div>
-</div>
-
-
-    <div id="notifications-section" class="section p-6 bg-gray-50 rounded-xl">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Notifications</h1>
-        <button id="mark-all-read" class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
-            <i class="fas fa-check-double"></i> Mark All as Read
-        </button>
-    </div>
-    
-    <div class="space-y-4">
-        <!-- Notification Item Template -->
-        <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#861703] hover:shadow-md transition">
-            <div class="flex justify-between">
-                <div class="flex items-start space-x-3">
-                    <div class="mt-1 text-[#861703]">
-                        <i class="fas fa-check-circle"></i>
+        <div id="programs-section" class="section hidden">
+            <div class="max-w-3xl mx-auto">
+                <h1 class="text-2xl font-bold mb-6 text-gray-800">Available Programs</h1>
+                
+                <!-- Program Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Program 1 - Housing Assistance -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-[#861703] text-white p-3 rounded-lg mr-4">
+                                    <i class="fas fa-home text-xl"></i>
+                                </div>
+                                <h2 class="text-xl font-semibold">Housing Assistance</h2>
+                            </div>
+                            <p class="text-gray-600 mb-4">Apply for government housing assistance and subsidies for low-income families in Kimberley.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Housing</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Subsidy</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Low-income</span>
+                            </div>
+                            <div class="mb-4">
+                                <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
+                                <ul class="list-disc pl-5 text-sm text-gray-600">
+                                    <li>South African ID</li>
+                                    <li>Proof of income</li>
+                                    <li>Proof of residence</li>
+                                    <li>Bank statement</li>
+                                </ul>
+                            </div>
+                            <button onclick="showApplicationForm('housing')" class="apply-now-btn">
+                                Apply Now
+                            </button>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="font-semibold text-gray-800">Pothole Report Resolved</h3>
-                        <p class="text-gray-600 text-sm">Your reported pothole on Main Street has been repaired.</p>
-                        <div class="flex items-center mt-2 space-x-3">
-                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                                Completed
-                            </span>
-                            <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 2 hours ago</p>
+
+                    <!-- Program 2 - Water Subsidy -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-blue-600 text-white p-3 rounded-lg mr-4">
+                                    <i class="fas fa-tint text-xl"></i>
+                                </div>
+                                <h2 class="text-xl font-semibold">Water Subsidy</h2>
+                            </div>
+                            <p class="text-gray-600 mb-4">Financial assistance for water bills for qualifying households in drought-affected areas.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Utility</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Water</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Subsidy</span>
+                            </div>
+                            <div class="mb-4">
+                                <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
+                                <ul class="list-disc pl-5 text-sm text-gray-600">
+                                    <li>South African ID</li>
+                                    <li>Recent water bill</li>
+                                    <li>Proof of income</li>
+                                </ul>
+                            </div>
+                            <button onclick="showApplicationForm('water')" class="apply-now-btn">
+                                Apply Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Program 3 - Youth Employment -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-green-600 text-white p-3 rounded-lg mr-4">
+                                    <i class="fas fa-briefcase text-xl"></i>
+                                </div>
+                                <h2 class="text-xl font-semibold">Youth Employment</h2>
+                            </div>
+                            <p class="text-gray-600 mb-4">Job placement and training program for unemployed youth (18-35 years).</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Employment</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Training</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Youth</span>
+                            </div>
+                            <div class="mb-4">
+                                <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
+                                <ul class="list-disc pl-5 text-sm text-gray-600">
+                                    <li>South African ID</li>
+                                    <li>Matric certificate</li>
+                                    <li>Proof of unemployment</li>
+                                    <li>CV/resume</li>
+                                </ul>
+                            </div>
+                            <button onclick="showApplicationForm('youth')" class="apply-now-btn">
+                                Apply Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Program 4 - Small Business Grant -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-purple-600 text-white p-3 rounded-lg mr-4">
+                                    <i class="fas fa-store text-xl"></i>
+                                </div>
+                                <h2 class="text-xl font-semibold">Small Business Grant</h2>
+                            </div>
+                            <p class="text-gray-600 mb-4">Funding and support for local entrepreneurs and small businesses.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Business</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Funding</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Entrepreneur</span>
+                            </div>
+                            <div class="mb-4">
+                                <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
+                                <ul class="list-disc pl-5 text-sm text-gray-600">
+                                    <li>South African ID</li>
+                                    <li>Business plan</li>
+                                    <li>Company registration documents</li>
+                                    <li>Financial statements</li>
+                                </ul>
+                            </div>
+                            <button onclick="showApplicationForm('Business')" class="apply-now-btn">
+                                Apply Now
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="flex space-x-2">
-                    <button class="text-gray-400 hover:text-[#861703]" title="Mark as Read">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
-                        <i class="far fa-times-circle"></i>
+
+                <!-- Application Form (hidden by default) -->
+                <div id="application-form" class="hidden bg-white rounded-xl shadow-md p-6 mb-8">
+                    <h2 class="text-xl font-bold mb-4" id="application-title">Application Form</h2>
+                    <form id="program-application-form">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-name">
+                                Full Name
+                            </label>
+                            <input type="text" id="applicant-name" class="w-full p-2 border rounded" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-id">
+                                South African ID Number
+                            </label>
+                            <input type="text" id="applicant-id" class="w-full p-2 border rounded" required>
+                            <p class="text-xs text-gray-500 mt-1">13-digit ID number without spaces</p>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-email">
+                                Email Address
+                            </label>
+                            <input type="email" id="applicant-email" class="w-full p-2 border rounded" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-phone">
+                                Phone Number
+                            </label>
+                            <input type="tel" id="applicant-phone" class="w-full p-2 border rounded" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-documents">
+                                Required Documents
+                            </label>
+                            <div id="required-docs" class="mb-2 text-sm text-gray-600"></div>
+                            <input type="file" id="applicant-documents" class="w-full p-2 border rounded" multiple required>
+                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, or PNG files only (max 5MB each)</p>
+                        </div>
+                        <div class="flex justify-end gap-4">
+                            <button type="button" onclick="hideApplicationForm()" class="cancel-btn">
+                                Cancel
+                            </button>
+                            <button type="submit" class="submit-btn">
+                                Submit Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Application Status -->
+                <div id="application-status" class="hidden bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold mb-4">Application Status</h2>
+                    <div id="status-message" class="mb-4"></div>
+                    <button onclick="hideStatusMessage()" class="back-btn">
+                        Back to Programs
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- More Notification Items -->
-        <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 hover:shadow-md transition">
-            <div class="flex justify-between">
-                <div class="flex items-start space-x-3">
-                    <div class="mt-1 text-blue-500">
-                        <i class="fas fa-home"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-gray-800">Housing Application Update</h3>
-                        <p class="text-gray-600 text-sm">Your housing application status has changed to "Under Review".</p>
-                        <div class="flex items-center mt-2 space-x-3">
-                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-                                Under Review
-                            </span>
-                            <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 1 day ago</p>
+        <div id="notifications-section" class="section p-6 bg-gray-50 rounded-xl">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Notifications</h1>
+                <button id="mark-all-read" class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
+                    <i class="fas fa-check-double"></i> Mark All as Read
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Notification Item Template -->
+                <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#861703] hover:shadow-md transition">
+                    <div class="flex justify-between">
+                        <div class="flex items-start space-x-3">
+                            <div class="mt-1 text-[#861703]">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">Pothole Report Resolved</h3>
+                                <p class="text-gray-600 text-sm">Your reported pothole on Main Street has been repaired.</p>
+                                <div class="flex items-center mt-2 space-x-3">
+                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                        Completed
+                                    </span>
+                                    <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 2 hours ago</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-400 hover:text-[#861703]" title="Mark as Read">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
+                                <i class="far fa-times-circle"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="flex space-x-2">
-                    <button class="text-gray-400 hover:text-blue-500" title="Mark as Read">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
-                        <i class="far fa-times-circle"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
 
-        <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500 hover:shadow-md transition">
-            <div class="flex justify-between">
-                <div class="flex items-start space-x-3">
-                    <div class="mt-1 text-green-500">
-                        <i class="fas fa-file-invoice-dollar"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-gray-800">Water Bill Reminder</h3>
-                        <p class="text-gray-600 text-sm">Your water bill payment is due in 3 days.</p>
-                        <div class="flex items-center mt-2 space-x-3">
-                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                Pending
-                            </span>
-                            <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 2 days ago</p>
+                <!-- More Notification Items -->
+                <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 hover:shadow-md transition">
+                    <div class="flex justify-between">
+                        <div class="flex items-start space-x-3">
+                            <div class="mt-1 text-blue-500">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">Housing Application Update</h3>
+                                <p class="text-gray-600 text-sm">Your housing application status has changed to "Under Review".</p>
+                                <div class="flex items-center mt-2 space-x-3">
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                                        Under Review
+                                    </span>
+                                    <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 1 day ago</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-400 hover:text-blue-500" title="Mark as Read">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
+                                <i class="far fa-times-circle"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="flex space-x-2">
-                    <button class="text-gray-400 hover:text-green-500" title="Mark as Read">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
-                        <i class="far fa-times-circle"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
 
-        <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-yellow-500 hover:shadow-md transition">
-            <div class="flex justify-between">
-                <div class="flex items-start space-x-3">
-                    <div class="mt-1 text-yellow-500">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-gray-800">Service Interruption</h3>
-                        <p class="text-gray-600 text-sm">Planned water outage in your area tomorrow 9AM-3PM.</p>
-                        <div class="flex items-center mt-2 space-x-3">
-                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                                Alert
-                            </span>
-                            <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 3 days ago</p>
+                <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500 hover:shadow-md transition">
+                    <div class="flex justify-between">
+                        <div class="flex items-start space-x-3">
+                            <div class="mt-1 text-green-500">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">Water Bill Reminder</h3>
+                                <p class="text-gray-600 text-sm">Your water bill payment is due in 3 days.</p>
+                                <div class="flex items-center mt-2 space-x-3">
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                        Pending
+                                    </span>
+                                    <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 2 days ago</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-400 hover:text-green-500" title="Mark as Read">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
+                                <i class="far fa-times-circle"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="flex space-x-2">
-                    <button class="text-gray-400 hover:text-yellow-500" title="Mark as Read">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
-                        <i class="far fa-times-circle"></i>
-                    </button>
+
+                <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-yellow-500 hover:shadow-md transition">
+                    <div class="flex justify-between">
+                        <div class="flex items-start space-x-3">
+                            <div class="mt-1 text-yellow-500">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">Service Interruption</h3>
+                                <p class="text-gray-600 text-sm">Planned water outage in your area tomorrow 9AM-3PM.</p>
+                                <div class="flex items-center mt-2 space-x-3">
+                                    <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                                        Alert
+                                    </span>
+                                    <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 3 days ago</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-400 hover:text-yellow-500" title="Mark as Read">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
+                                <i class="far fa-times-circle"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <div class="mt-6 text-center">
+                <button class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
+                    <i class="fas fa-sync-alt"></i> Load Older Notifications
+                </button>
+            </div>
         </div>
-    </div>
-
-    <div class="mt-6 text-center">
-        <button class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
-            <i class="fas fa-sync-alt"></i> Load Older Notifications
-        </button>
-    </div>
-</div>
-
-    
 
         <div id="contact-section" class="section hidden">
             <h1 class="text-2xl font-bold mb-4">Contact Us</h1>
@@ -1486,6 +1542,7 @@
         let watchPositionId = null;
         let currentPosition = null;
         let currentFacingMode = 'environment';
+        let isCameraSupported = false;
 
         // DOM Elements
         const videoPreview = document.getElementById('video-preview');
@@ -1499,6 +1556,33 @@
         const gpsIndicator = document.getElementById('gps-indicator');
         const submitIssueBtn = document.getElementById('submit-issue-btn');
         const flashEffect = document.getElementById('flash');
+        const cameraError = document.getElementById('camera-error');
+        const cameraErrorMessage = document.getElementById('camera-error-message');
+
+        // Check camera support on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            isCameraSupported = !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia;
+            
+            if (!isCameraSupported) {
+                showCameraError('Camera not supported in your browser. Please use a modern browser like Chrome or Firefox.');
+                startCameraBtn.disabled = true;
+            }
+            
+            const user = JSON.parse(localStorage.getItem('auth_user'));
+            if (!user) {
+                showSection('login');
+            } else {
+                showSection('news');
+            }
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('expanded')) {
+                sidebar.classList.remove('expanded');
+            }
+            loadProfileDetails();
+        });
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -1560,23 +1644,44 @@
             }
             capturedImages = [];
             updateImageGallery();
+            hideCameraError();
         }
 
-        // Camera functions
-        function startCamera() {
+        async function startCamera() {
+            if (!isCameraSupported) return;
             if (capturedImages.length >= 5) {
                 showMaxImagesNotice();
                 return;
             }
 
-            navigator.mediaDevices.getUserMedia({ 
-                video: { 
-                    facingMode: currentFacingMode,
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                } 
-            }).then(s => {
-                stream = s;
+            try {
+                // Check camera permissions first
+                if (navigator.permissions && navigator.permissions.query) {
+                    const permission = await navigator.permissions.query({ name: 'camera' });
+                    if (permission.state === 'denied') {
+                        showCameraError('Camera access was denied. Please enable camera permissions in your browser settings.');
+                        return;
+                    }
+                }
+
+                // Check geolocation permissions
+                if (navigator.permissions && navigator.permissions.query) {
+                    const geoPermission = await navigator.permissions.query({ name: 'geolocation' });
+                    if (geoPermission.state === 'denied') {
+                        showCameraError('Location access was denied. Photos will be captured without location data.');
+                    }
+                }
+
+                const constraints = {
+                    video: { 
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                };
+
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
                 videoPreview.srcObject = stream;
                 videoPreview.classList.remove('hidden');
                 photoCanvas.classList.add('hidden');
@@ -1584,76 +1689,128 @@
                 captureBtn.classList.remove('hidden');
                 switchCameraBtn.classList.remove('hidden');
                 startCameraBtn.classList.add('hidden');
+                
                 startWatchingLocation();
-            }).catch(err => {
+                hideCameraError();
+                
+                // Play video to activate camera
+                videoPreview.play().catch(err => {
+                    showCameraError('Could not start camera: ' + err.message);
+                    stopCamera();
+                });
+                
+            } catch (err) {
                 console.error('Camera error:', err);
-                alert('Could not access camera. Please ensure you have granted camera permissions.');
-            });
+                showCameraError('Could not access camera: ' + (err.message || 'Please ensure you have granted camera permissions.'));
+                
+                // Try again with less strict constraints if facingMode fails
+                if (err.name === 'OverconstrainedError' && err.constraint === 'facingMode') {
+                    currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+                    setTimeout(startCamera, 100);
+                }
+            }
         }
 
         function switchCamera() {
             if (!stream) return;
+            
+            // Stop all tracks
             stream.getTracks().forEach(track => track.stop());
+            
+            // Toggle between front and back camera
             currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            
+            // Restart camera with new facing mode
             startCamera();
         }
 
-        function capturePhoto() {
+        async function capturePhoto() {
             if (capturedImages.length >= 5) {
                 showMaxImagesNotice();
                 return;
             }
 
-            flashEffect.classList.add('flash');
-            setTimeout(() => flashEffect.classList.remove('flash'), 500);
+            try {
+                // Show flash effect
+                flashEffect.classList.add('flash');
+                setTimeout(() => flashEffect.classList.remove('flash'), 500);
 
-            const context = photoCanvas.getContext('2d');
-            photoCanvas.width = videoPreview.videoWidth;
-            photoCanvas.height = videoPreview.videoHeight;
-            context.drawImage(videoPreview, 0, 0, photoCanvas.width, photoCanvas.height);
+                // Prepare canvas
+                const context = photoCanvas.getContext('2d');
+                photoCanvas.width = videoPreview.videoWidth;
+                photoCanvas.height = videoPreview.videoHeight;
+                context.drawImage(videoPreview, 0, 0, photoCanvas.width, photoCanvas.height);
 
-            navigator.geolocation.getCurrentPosition(
-                position => {
-                    const { latitude, longitude } = position.coords;
-                    const imageData = photoCanvas.toDataURL('image/jpeg', 0.8);
-                    
-                    capturedImages.push({
-                        data: imageData,
-                        latitude,
-                        longitude,
-                        timestamp: new Date().toLocaleString()
+                // Get location if available
+                let location = null;
+                try {
+                    location = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(
+                            position => resolve(position.coords),
+                            error => reject(error),
+                            { enableHighAccuracy: true, timeout: 5000 }
+                        );
                     });
+                } catch (geoError) {
+                    console.warn('Geolocation error:', geoError);
+                }
+
+                // Compress image before storing
+                const imageData = await compressImage(photoCanvas.toDataURL('image/jpeg', 0.8));
+                
+                // Store the captured photo
+                capturedImages.push({
+                    data: imageData,
+                    latitude: location?.latitude || null,
+                    longitude: location?.longitude || null,
+                    timestamp: new Date().toLocaleString(),
+                    locationError: !location
+                });
+                
+                updateImageGallery();
+                checkImageLimit();
+                
+                // Hide photo canvas and show video again
+                videoPreview.classList.remove('hidden');
+                photoCanvas.classList.add('hidden');
+                
+            } catch (error) {
+                console.error('Error capturing photo:', error);
+                showCameraError('Failed to capture photo. Please try again.');
+            }
+        }
+
+        function compressImage(dataUrl, quality = 0.7) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const maxDimension = 1024; // Maximum width/height
+                    let width = img.width;
+                    let height = img.height;
                     
-                    updateImageGallery();
-                    checkImageLimit();
+                    // Resize if too large
+                    if (width > height && width > maxDimension) {
+                        height *= maxDimension / width;
+                        width = maxDimension;
+                    } else if (height > maxDimension) {
+                        width *= maxDimension / height;
+                        height = maxDimension;
+                    }
                     
-                    videoPreview.classList.remove('hidden');
-                    photoCanvas.classList.add('hidden');
-                },
-                error => {
-                    console.error('Geolocation error:', error);
-                    const imageData = photoCanvas.toDataURL('image/jpeg', 0.8);
-                    
-                    capturedImages.push({
-                        data: imageData,
-                        latitude: null,
-                        longitude: null,
-                        timestamp: new Date().toLocaleString(),
-                        locationError: true
-                    });
-                    
-                    updateImageGallery();
-                    checkImageLimit();
-                    
-                    videoPreview.classList.remove('hidden');
-                    photoCanvas.classList.add('hidden');
-                },
-                { enableHighAccuracy: true }
-            );
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.src = dataUrl;
+            });
         }
 
         function updateImageGallery() {
             imageGallery.innerHTML = '';
+            
             capturedImages.forEach((image, index) => {
                 const thumbnail = document.createElement('div');
                 thumbnail.className = 'image-thumbnail';
@@ -1661,6 +1818,7 @@
                 const img = document.createElement('img');
                 img.src = image.data;
                 img.alt = `Photo ${index + 1}`;
+                img.loading = "lazy";
                 
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'remove-btn';
@@ -1684,8 +1842,27 @@
                 thumbnail.appendChild(img);
                 thumbnail.appendChild(removeBtn);
                 thumbnail.appendChild(locationTag);
+                
+                // Add click to view larger
+                thumbnail.addEventListener('click', () => viewImage(image.data));
+                
                 imageGallery.appendChild(thumbnail);
             });
+        }
+
+        function viewImage(dataUrl) {
+            // Create modal to view larger image
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="relative max-w-full max-h-full">
+                    <img src="${dataUrl}" class="max-w-full max-h-[90vh] object-contain" alt="Enlarged view">
+                    <button class="absolute top-4 right-4 text-white text-2xl" onclick="this.parentElement.parentElement.remove()">
+                        &times;
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
 
         function removeImage(index) {
@@ -1766,6 +1943,15 @@
                 watchPositionId = null;
             }
             gpsIndicator.classList.add('hidden');
+        }
+
+        function showCameraError(message) {
+            cameraErrorMessage.textContent = message;
+            cameraError.classList.remove('hidden');
+        }
+
+        function hideCameraError() {
+            cameraError.classList.add('hidden');
         }
 
         function submitIssue() {
@@ -2030,22 +2216,68 @@
             showSection('news');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const user = JSON.parse(localStorage.getItem('auth_user'));
-            if (!user) {
-                showSection('login');
-            } else {
-                showSection('news');
+        function showApplicationForm(programType) {
+            document.getElementById('application-form').classList.remove('hidden');
+            document.getElementById('application-title').textContent = `${programType} Application Form`;
+            
+            // Set required documents based on program type
+            const requiredDocs = document.getElementById('required-docs');
+            switch(programType.toLowerCase()) {
+                case 'housing':
+                    requiredDocs.innerHTML = `
+                        <p>Required documents:</p>
+                        <ul class="list-disc pl-5">
+                            <li>South African ID</li>
+                            <li>Proof of income</li>
+                            <li>Proof of residence</li>
+                            <li>Bank statement</li>
+                        </ul>
+                    `;
+                    break;
+                case 'water':
+                    requiredDocs.innerHTML = `
+                        <p>Required documents:</p>
+                        <ul class="list-disc pl-5">
+                            <li>South African ID</li>
+                            <li>Recent water bill</li>
+                            <li>Proof of income</li>
+                        </ul>
+                    `;
+                    break;
+                case 'youth':
+                    requiredDocs.innerHTML = `
+                        <p>Required documents:</p>
+                        <ul class="list-disc pl-5">
+                            <li>South African ID</li>
+                            <li>Matric certificate</li>
+                            <li>Proof of unemployment</li>
+                            <li>CV/resume</li>
+                        </ul>
+                    `;
+                    break;
+                case 'business':
+                    requiredDocs.innerHTML = `
+                        <p>Required documents:</p>
+                        <ul class="list-disc pl-5">
+                            <li>South African ID</li>
+                            <li>Business plan</li>
+                            <li>Company registration documents</li>
+                            <li>Financial statements</li>
+                        </ul>
+                    `;
+                    break;
+                default:
+                    requiredDocs.innerHTML = '<p>Please upload all required documents for your application.</p>';
             }
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.add('hidden');
-            });
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar.classList.contains('expanded')) {
-                sidebar.classList.remove('expanded');
-            }
-            loadProfileDetails();
-        });
+        }
+
+        function hideApplicationForm() {
+            document.getElementById('application-form').classList.add('hidden');
+        }
+
+        function hideStatusMessage() {
+            document.getElementById('application-status').classList.add('hidden');
+        }
 
         // Initialize report section when shown
         document.getElementById('nav-report').addEventListener('click', function(e) {
@@ -2053,10 +2285,20 @@
             showSection('report');
             initReportSection();
         });
-    </script>
-    <script src="css/javascript/programs.js"></script>
-    <script src="css/javascript/notifications.js"></script>
-    
 
+        // Event Listeners
+        startCameraBtn.addEventListener('click', startCamera);
+        capturePhotoBtn.addEventListener('click', capturePhoto);
+        captureBtn.addEventListener('click', capturePhoto);
+        switchCameraBtn.addEventListener('click', switchCamera);
+        submitIssueBtn.addEventListener('click', submitIssue);
+    </script>
+
+    <script src="css/javascript/auth.js"></script>
+    <script src="css/javascript/main.js"></script>
+    <script src="css/javascript/notifications.js"></script>
+    <script src="css/javascript/programs.js"></script>
+    <script src="css/javascript/submissions.js"></script>
+    <script src="css/javascript/utils.js"></script>
 </body>
 </html>
