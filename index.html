@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixNC Citizen Prototype</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(to bottom right, #f8f8f8, #e0f2e9, #ffffff);
+            min-height: 110vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 0;
+            background: #fff;
+            height: calc(100vh - 60px);
+            position: fixed;
+            top: 60px;
+            left: 0;
+            z-index: 1000;
+            overflow-x: hidden;
+            transition: width 0.3s ease;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar.expanded {
+            width: 250px;
+        }
+
+        .header {
+            background: #861703;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1001;
+        }
+
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-toggle {
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px 10px;
+            background: #fff;
+            border: 2px solid #861703;
+            color: #861703;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .menu-toggle i {
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.expanded .menu-toggle {
+            background: #861703;
+        }
+
+        .sidebar.expanded .menu-toggle i {
+            opacity: 0;
+        }
+
+        .sidebar.expanded .menu-toggle::after {
+            content: '\f00d';
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            color: #fff;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-menu {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .nav-item {
+            width: 100%;
+            padding: 12px 15px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            color: #861703;
+            text-decoration: none;
+            transition: background 0.3s ease;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .sidebar.expanded .nav-item {
+            opacity: 1;
+            height: auto;
+            transition: opacity 0.3s ease, height 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #f0e6e6;
+        }
+
+        .nav-item i {
+            font-size: 1.2em;
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-item span {
+            display: none;
+            font-size: 0.95em;
+        }
+
+        .sidebar.expanded .nav-item span {
+            display: inline;
+        }
+
+        .nav-item.notification i {
+            position: relative;
+        }
+
+        .nav-item.notification i::after {
+            content: attr(data-count);
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ff4444;
+            color: #fff;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-footer {
+            width: 100%;
+            padding: 10px 15px;
+            margin-top: auto;
+            position: absolute;
+            bottom: 0;
+        }
+
+        .main-content {
+            padding: 20px;
+            margin-top: 60px;
+            transition: none;
+            width: 100%;
+        }
+
+        .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #fff;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .nav-btn {
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            width: 100%;
+            text-align: center;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            color: #a31703;
+            background: #f0e6e6;
+        }
+
+        @media (max-width: 640px) {
+            .sidebar.expanded {
+                width: 200px;
+            }
+            .main-content {
+                padding: 10px;
+            }
+            .nav-btn {
+                font-size: 1.2rem;
+            }
+        }
+
+        .news-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 4px solid #861703;
+            background: #f9f9f9;
+        }
+
+        .ad-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #e0f2e9;
+            text-align: center;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            background: #333333 url('https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y') no-repeat center;
+            background-size: cover;
+            border-radius: 50%;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .profile-icon.clicked {
+            box-shadow: 0 0 10px #861703, 0 0 20px #861703;
+        }
+
+        .profile-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1002;
+        }
+
+        .profile-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .profile-card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2em;
+            color: #861703;
+            cursor: pointer;
+            padding: 5px;
+            background: #fff;
+            border-radius: 50%;
+            border: 1px solid #861703;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #861703;
+            color: #fff;
+        }
+
+        .profile-grid {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-grid-two-cols {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .profile-label {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 6px;
+            font-weight: 500;
+            display: block;
+        }
+
+        .profile-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .profile-input-wrapper:focus-within {
+            border-color: #861703;
+            box-shadow: 0 0 0 3px rgba(134, 23, 3, 0.2);
+        }
+
+        .profile-input-flex {
+            border: none;
+            outline: none;
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            font-size: 1em;
+            background: transparent;
+            border-radius: 8px;
+        }
+
+        .input-prefix {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .input-prefix img {
+            width: 18px;
+            height: auto;
+        }
+
+        .profile-button {
+            background: #861703;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            font-size: 1em;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .profile-button:hover {
+            background: #6a1202;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .spinner {
+            display: none;
+            border: 4px solid rgba(134, 23, 3, 0.1);
+            border-top: 4px solid #861703;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+
+        .success-message {
+            display: none;
+            color: #28a745;
+            text-align: center;
+            font-weight: 600;
+            margin: 1rem 0;
+            padding: 10px;
+            background: rgba(40, 167, 69, 0.1);
+            border-radius: 8px;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .input-error {
+            border-color: #dc3545 !important;
+        }
+
+        /* Report Section Styles */
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .video-preview {
+            width: 100%;
+            background: #000;
+            display: block;
+        }
+        
+        .photo-canvas {
+            width: 100%;
+            display: none;
+            background: #f0f0f0;
+        }
+        
+        .camera-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 10;
+        }
+        
+        .capture-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .capture-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .capture-btn-inner {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #861703;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.2s;
+        }
+        
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .image-thumbnail {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 100px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .image-thumbnail:hover {
+            transform: scale(1.05);
+        }
+        
+        .image-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 2;
+        }
+        
+        .location-tag {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 10px;
+            max-width: calc(100% - 10px);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            z-index: 2;
+        }
+        
+        .max-images-notice {
+            background: #861703;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .gps-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 10;
+        }
+        
+        .gps-active {
+            color: #4ade80;
+        }
+        
+        .gps-inactive {
+            color: #f87171;
+        }
+        
+        .flash-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .flash {
+            animation: flash 0.5s ease-out;
+        }
+        
+        @keyframes flash {
+            0% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+        
+        .switch-camera-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+        /* Good button styles */
+        /* Target ALL Apply Now buttons */
+.apply-now-btn {
+  display: block;           /* Makes button respect width */
+  width: 100%;              /* Full width of parent */
+  background: #861703;      /* Maroon background */
+  color: white;             /* White text for contrast */
+  padding: 0.5rem 1rem;     /* py-2 px-4 equivalent */
+  border-radius: 0.5rem;    /* rounded-lg (8px) */
+  font-weight: 500;         /* font-medium */
+  border: none;             /* Remove default border */
+  cursor: pointer;          /* Show pointer on hover */
+  transition: background 0.2s ease; /* Smooth hover effect */
+}
+
+/* Hover state */
+.apply-now-btn:hover {
+  background: #6a1202;      /* Darker maroon */
+}
+
+/* Focus state (accessibility) */
+.apply-now-btn:focus {
+  outline: none;            /* Remove default outline */
+  box-shadow: 0 0 0 3px rgba(134, 23, 3, 0.3); /* Focus ring */
+}
+
+
+  /* ===== Base Button Styles ===== */
+/* Form Submission - Submit Application */
+.submit-btn {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0.5rem 0;
+  
+  /* Unique styles */
+  background: #1a5c1a;
+  color: white;
+  border: none;
+}
+
+.submit-btn:hover {
+  background: #134713;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.submit-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26, 92, 26, 0.3);
+}
+
+/* Secondary Action - Cancel */
+.cancel-btn {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0.5rem 0;
+  
+  /* Unique styles */
+  background: transparent;
+  color: #861703;
+  border: 2px solid #861703;
+}
+
+.cancel-btn:hover {
+  background: rgba(134, 23, 3, 0.05);
+}
+
+.cancel-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(134, 23, 3, 0.2);
+}
+
+/* Navigation - Back to Programs */
+.back-btn {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0.5rem 0;
+  
+  /* Unique styles */
+  background: #333;
+  color: white;
+  border: none;
+}
+
+.back-btn:hover {
+  background: #222;
+}
+
+.back-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.3);
+}
+
+        
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="header">
+        <div class="header-left">
+            <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        </div>
+        <div class="header-right">
+            <div class="profile-icon" onclick="handleProfileClick()"></div>
+        </div>
+    </div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="nav-menu">
+            <a href="#" class="nav-item" onclick="handleNavItemClick('news')"><i class="fas fa-newspaper"></i><span>News</span></a>
+            <a href="#" class="nav-item" onclick="handleNavItemClick('report')"><i class="fas fa-exclamation-circle"></i><span>Report</span></a>
+            <a href="#" class="nav-item" onclick="handleNavItemClick('submissions')"><i class="fas fa-list"></i><span>Submissions</span></a>
+            <a href="#" class="nav-item" onclick="handleNavItemClick('programs')"><i class="fas fa-graduation-cap"></i><span>Programs</span></a>
+            <a href="#" class="nav-item notification" onclick="handleNavItemClick('notifications')" data-count="3"><i class="fas fa-bell"></i><span>Notifications</span></a>
+            <a href="#" class="nav-item" onclick="handleNavItemClick('contact')"><i class="fas fa-envelope"></i><span>Contact Us</span></a>
+        </div>
+        <div class="sidebar-footer">
+            <a href="#" class="nav-item" onclick="handleNavItemClick('logout')"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div id="login-section" class="section hidden">
+            <h1 class="text-2xl font-bold mb-4">Login</h1>
+            <p class="mb-4">Please log in to access your account.</p>
+            <button onclick="login()" class="w-full bg-[#861703] text-white p-2 rounded mb-2">Go to Login</button>
+        </div>
+
+        <div id="news-section" class="section">
+            <h1 class="text-2xl font-bold mb-4">Welcome to FixNC - Kimberley Updates</h1>
+            <div class="news-item">
+                <h2 class="text-xl font-semibold">New Pothole Repairs Scheduled</h2>
+                <p>Kimberley City Council announces repairs starting July 20, 2025, targeting key roads. Stay tuned for updates!</p>
+            </div>
+            <div class="news-item">
+                <h2 class="text-xl font-semibold">Water Supply Improvement</h2>
+                <p>Efforts to fix burst pipes in central Kimberley are underway, expected completion by July 25, 2025.</p>
+            </div>
+            <div class="ad-item">
+                <h3 class="text-lg font-semibold">Ad: Local Market Day</h3>
+                <p>Join us this Saturday at 9 AM, Market Square, Kimberley, for fresh produce and local crafts!</p>
+            </div>
+        </div>
+
+        <div id="report-section" class="section hidden">
+            <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+                <h1 class="text-2xl font-bold text-gray-800 mb-6">Report an Issue</h1>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="issue-category">
+                        Issue Type
+                    </label>
+                    <select id="issue-category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#861703] focus:border-[#861703]">
+                        <option value="">Select issue type</option>
+                        <option value="Pothole">Pothole</option>
+                        <option value="Burst Pipe">Burst Pipe</option>
+                        <option value="Street Light">Street Light</option>
+                        <option value="Graffiti">Graffiti</option>
+                        <option value="Illegal Dumping">Illegal Dumping</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="issue-description">
+                        Description
+                    </label>
+                    <textarea id="issue-description" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#861703] focus:border-[#861703]" placeholder="Please describe the issue in detail..."></textarea>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        Photo Evidence (Max 5)
+                    </label>
+                    
+                    <div class="camera-container mb-4">
+                        <div id="flash" class="flash-effect"></div>
+                        <video id="video-preview" class="video-preview hidden" autoplay playsinline></video>
+                        <canvas id="photo-canvas" class="photo-canvas"></canvas>
+                        
+                        <div id="gps-indicator" class="gps-indicator hidden">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Acquiring location...</span>
+                        </div>
+                        
+                        <div class="camera-controls">
+                            <button id="capture-btn" class="capture-btn hidden pulse-animation">
+                                <div class="capture-btn-inner"></div>
+                            </button>
+                        </div>
+                        
+                        <button id="switch-camera-btn" class="switch-camera-btn hidden">
+                            <i class="fas fa-camera-retro"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="flex gap-4 mb-4">
+                        <button id="start-camera-btn" class="bg-[#861703] text-white px-4 py-2 rounded-lg hover:bg-[#6a1202] transition flex items-center">
+                            <i class="fas fa-camera mr-2"></i> Start Camera
+                        </button>
+                        
+                        <button id="capture-photo-btn" class="bg-[#861703] text-white px-4 py-2 rounded-lg hover:bg-[#6a1202] transition hidden flex items-center">
+                            <i class="fas fa-camera-retro mr-2"></i> Take Photo
+                        </button>
+                    </div>
+                    
+                    <div id="max-images-notice" class="max-images-notice hidden">
+                        <i class="fas fa-info-circle mr-2"></i> You've reached the maximum of 5 photos
+                    </div>
+                    
+                    <div id="image-gallery" class="gallery-container"></div>
+                </div>
+                
+                <button id="submit-issue-btn" class="w-full bg-[#861703] text-white py-3 rounded-lg font-bold hover:bg-[#6a1202] transition flex items-center justify-center">
+                    <i class="fas fa-paper-plane mr-2"></i> Submit Report
+                </button>
+            </div>
+        </div>
+
+        <div id="profile-section" class="section hidden">
+            <div class="profile-card">
+                <h2>Edit Profile</h2>
+                <span class="close-btn" onclick="closeProfileSection()">✕</span>
+                <div class="profile-grid">
+                    <div class="profile-grid-two-cols">
+                        <div>
+                            <label class="profile-label" for="profile-first-name">First Name</label>
+                            <div class="profile-input-wrapper">
+                                <input id="profile-first-name" type="text" placeholder="John" class="profile-input-flex">
+                            </div>
+                            <div id="first-name-error" class="error-message">Please enter your first name</div>
+                        </div>
+                        <div>
+                            <label class="profile-label" for="profile-last-name">Last Name</label>
+                            <div class="profile-input-wrapper">
+                                <input id="profile-last-name" type="text" placeholder="Doe" class="profile-input-flex">
+                            </div>
+                            <div id="last-name-error" class="error-message">Please enter your last name</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-grid-full">
+                        <label class="profile-label" for="profile-email">Email</label>
+                        <div class="profile-input-wrapper">
+                            <input id="profile-email" type="email" placeholder="email@example.com" class="profile-input-flex">
+                        </div>
+                        <div id="email-error" class="error-message">Please enter a valid email address</div>
+                    </div>
+
+                    <div class="profile-grid-full">
+                        <label class="profile-label" for="profile-username">Username</label>
+                        <div class="profile-input-wrapper">
+                            <input id="profile-username" type="text" placeholder="john_doe" class="profile-input-flex">
+                        </div>
+                        <div id="username-error" class="error-message">Username must be at least 4 characters</div>
+                    </div>
+
+                    <div class="profile-grid-two-cols">
+                        <div>
+                            <label class="profile-label" for="profile-phone">Phone Number</label>
+                            <div class="profile-input-wrapper">
+                                <div class="input-prefix">
+                                    <img src="https://flagcdn.com/w20/za.png" alt="South Africa Flag">
+                                    +27
+                                </div>
+                                <input id="profile-phone" type="tel" placeholder=" 000 000 000" class="profile-input-flex">
+                            </div>
+                            <div id="phone-error" class="error-message">Please enter a valid 9-digit phone number</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-grid-two-cols">
+                        <div>
+                            <label class="profile-label" for="profile-birthdate">Date of Birth</label>
+                            <div class="profile-input-wrapper">
+                                <input id="profile-birthdate" type="date" class="profile-input-flex">
+                            </div>
+                            <div id="birthdate-error" class="error-message">Please select your date of birth</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-grid-full">
+                        <label class="profile-label" for="profile-security-question">Security Question</label>
+                        <div class="profile-input-wrapper">
+                            <select id="profile-security-question" class="profile-input-flex">
+                                <option value="">Select a question</option>
+                                <option value="pet">What is the name of your first pet?</option>
+                                <option value="school">What was the name of your first school?</option>
+                            </select>
+                        </div>
+                        <div id="security-question-error" class="error-message">Please select a security question</div>
+                    </div>
+
+                    <div class="profile-grid-full">
+                        <label class="profile-label" for="profile-security-answer">Security Answer</label>
+                        <div class="profile-input-wrapper">
+                            <input id="profile-security-answer" type="text" placeholder="Answer" class="profile-input-flex">
+                        </div>
+                        <div id="security-answer-error" class="error-message">Please provide an answer</div>
+                    </div>
+                </div>
+                <div class="spinner" id="saveSpinner"></div>
+                <div class="success-message" id="saveSuccess"></div>
+                <button onclick="saveProfile()" class="profile-button" id="saveButton">Save Changes</button>
+            </div>
+        </div>
+
+        <div id="submissions-section" class="section hidden p-6 bg-gray-50 rounded-xl">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">My Submissions</h1>
+        <button id="refresh-submissions" class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+
+    <div class="space-y-4" id="submissions-list">
+        <!-- Pothole Report Submission -->
+        <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#861703] hover:shadow-md transition">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-[#861703]">
+                            <i class="fas fa-road text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Pothole Report</h3>
+                            <p class="text-gray-600 text-sm">Location: Main Street, Kimberley</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                            <i class="fas fa-check-circle mr-1"></i> Resolved
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            <i class="far fa-clock mr-1"></i> Reported on 15 Jun 2023
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            <i class="fas fa-calendar-check mr-1"></i> Resolved on 20 Jun 2023
+                        </span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="text-gray-400 hover:text-[#861703]" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-[#861703]" title="Share">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-3">
+                <img src="https://iili.io/Fha8Ojp.md.jpg" class="w-full h-32 object-cover rounded-lg cursor-pointer" alt="Pothole photo">
+            </div>
+        </div>
+
+        <!-- Housing Application Submission -->
+        <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 hover:shadow-md transition">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-blue-500">
+                            <i class="fas fa-home text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Housing Assistance Application</h3>
+                            <p class="text-gray-600 text-sm">Reference: APP-20230614-001</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                            <i class="fas fa-hourglass-half mr-1"></i> Under Review
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            <i class="far fa-clock mr-1"></i> Submitted on 14 Jun 2023
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            <i class="fas fa-user-clock mr-1"></i> Estimated response: 7-10 days
+                        </span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="text-gray-400 hover:text-blue-500" title="Check Status">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-blue-500" title="Upload Documents">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="flex items-center text-xs text-gray-500">
+                    <i class="fas fa-file-pdf mr-1 text-red-500"></i>
+                    <span>application_form.pdf</span>
+                    <span class="ml-2">• 2.4MB</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Water Service Request -->
+        <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500 hover:shadow-md transition">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-green-500">
+                            <i class="fas fa-tint text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Water Service Request</h3>
+                            <p class="text-gray-600 text-sm">Account #: WS-789456123</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                            <i class="fas fa-tools mr-1"></i> In Progress
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            <i class="far fa-clock mr-1"></i> Submitted on 10 Jun 2023
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            <i class="fas fa-user-hard-hat mr-1"></i> Technician assigned
+                        </span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="text-gray-400 hover:text-green-500" title="Contact Support">
+                        <i class="fas fa-headset"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-green-500" title="Cancel Request">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Grant Application -->
+        <div class="submission-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-purple-500 hover:shadow-md transition">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-purple-500">
+                            <i class="fas fa-store text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Small Business Grant</h3>
+                            <p class="text-gray-600 text-sm">Business: Kimberley Fresh Produce</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Additional Info Required
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            <i class="far fa-clock mr-1"></i> Submitted on 5 Jun 2023
+                        </span>
+                        <span class="text-xs text-[#861703] font-medium">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Response needed by 25 Jun
+                        </span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="text-gray-400 hover:text-purple-500" title="View Request">
+                        <i class="fas fa-file-alt"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-purple-500" title="Submit Documents">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-2 text-xs text-[#861703] bg-[#f0e6e6] p-2 rounded">
+                <i class="fas fa-info-circle mr-1"></i> Please submit your business license by 25 Jun to avoid cancellation
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-6 text-center">
+        <button class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
+            <i class="fas fa-history"></i> View Submission History
+        </button>
+    </div>
+</div>
+
+          <div id="programs-section" class="section hidden">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6 text-gray-800">Available Programs</h1>
+        
+        <!-- Program Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Program 1 - Housing Assistance -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-[#861703] text-white p-3 rounded-lg mr-4">
+                            <i class="fas fa-home text-xl"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold">Housing Assistance</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4">Apply for government housing assistance and subsidies for low-income families in Kimberley.</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Housing</span>
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Subsidy</span>
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Low-income</span>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
+                        <ul class="list-disc pl-5 text-sm text-gray-600">
+                            <li>South African ID</li>
+                            <li>Proof of income</li>
+                            <li>Proof of residence</li>
+                            <li>Bank statement</li>
+                        </ul>
+                    </div>
+                             <button 
+  onclick="showApplicationForm('housing')"
+  class="apply-now-btn"  
+>
+  Apply Now
+</button>
+                </div>
+            </div>
+
+            <!-- Program 2 - Water Subsidy -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-600 text-white p-3 rounded-lg mr-4">
+                            <i class="fas fa-tint text-xl"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold">Water Subsidy</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4">Financial assistance for water bills for qualifying households in drought-affected areas.</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Utility</span>
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Water</span>
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Subsidy</span>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
+                        <ul class="list-disc pl-5 text-sm text-gray-600">
+                            <li>South African ID</li>
+                            <li>Recent water bill</li>
+                            <li>Proof of income</li>
+                        </ul>
+                    </div>
+                    <button onclick="showApplicationForm('water')"
+  class="apply-now-btn"  
+>
+  Apply Now
+</button>
+                </div>
+            </div>
+
+            <!-- Program 3 - Youth Employment -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-green-600 text-white p-3 rounded-lg mr-4">
+                            <i class="fas fa-briefcase text-xl"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold">Youth Employment</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4">Job placement and training program for unemployed youth (18-35 years).</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Employment</span>
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Training</span>
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Youth</span>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
+                        <ul class="list-disc pl-5 text-sm text-gray-600">
+                            <li>South African ID</li>
+                            <li>Matric certificate</li>
+                            <li>Proof of unemployment</li>
+                            <li>CV/resume</li>
+                        </ul>
+                    </div>
+                  <button onclick="showApplicationForm('youth')"
+  class="apply-now-btn"  
+>
+  Apply Now
+</button>
+                </div>
+            </div>
+
+            <!-- Program 4 - Small Business Grant -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-purple-600 text-white p-3 rounded-lg mr-4">
+                            <i class="fas fa-store text-xl"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold">Small Business Grant</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4">Funding and support for local entrepreneurs and small businesses.</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Business</span>
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Funding</span>
+                        <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">Entrepreneur</span>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="font-medium text-gray-700 mb-1">Requirements:</h3>
+                        <ul class="list-disc pl-5 text-sm text-gray-600">
+                            <li>South African ID</li>
+                            <li>Business plan</li>
+                            <li>Company registration documents</li>
+                            <li>Financial statements</li>
+                        </ul>
+                    </div>
+                    <button  onclick="showApplicationForm('Business')"
+  class="apply-now-btn"  
+>
+  Apply Now
+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Form (hidden by default) -->
+        <div id="application-form" class="hidden bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4" id="application-title">Application Form</h2>
+            <form id="program-application-form">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-name">
+                        Full Name
+                    </label>
+                    <input type="text" id="applicant-name" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-id">
+                        South African ID Number
+                    </label>
+                    <input type="text" id="applicant-id" class="w-full p-2 border rounded" required>
+                    <p class="text-xs text-gray-500 mt-1">13-digit ID number without spaces</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-email">
+                        Email Address
+                    </label>
+                    <input type="email" id="applicant-email" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-phone">
+                        Phone Number
+                    </label>
+                    <input type="tel" id="applicant-phone" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="applicant-documents">
+                        Required Documents
+                    </label>
+                    <div id="required-docs" class="mb-2 text-sm text-gray-600"></div>
+                    <input type="file" id="applicant-documents" class="w-full p-2 border rounded" multiple required>
+                    <p class="text-xs text-gray-500 mt-1">PDF, JPG, or PNG files only (max 5MB each)</p>
+                </div>
+                <div class="flex justify-end gap-4">
+
+                     <button 
+                      type="button" 
+                      onclick="hideApplicationForm()" 
+                      class="cancel-btn"
+                      >
+                      Cancel
+                      </button>
+
+
+                    <button 
+                    type="submit" 
+                    class="submit-btn" 
+                    >
+                    Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Application Status -->
+        <div id="application-status" class="hidden bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">Application Status</h2>
+            <div id="status-message" class="mb-4"></div>
+              
+            <button 
+            onclick="hideStatusMessage()" 
+            class="back-btn"  
+            >
+            Back to Programs
+            </button>
+        </div>
+    </div>
+</div>
+
+
+    <div id="notifications-section" class="section p-6 bg-gray-50 rounded-xl">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Notifications</h1>
+        <button id="mark-all-read" class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
+            <i class="fas fa-check-double"></i> Mark All as Read
+        </button>
+    </div>
+    
+    <div class="space-y-4">
+        <!-- Notification Item Template -->
+        <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#861703] hover:shadow-md transition">
+            <div class="flex justify-between">
+                <div class="flex items-start space-x-3">
+                    <div class="mt-1 text-[#861703]">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Pothole Report Resolved</h3>
+                        <p class="text-gray-600 text-sm">Your reported pothole on Main Street has been repaired.</p>
+                        <div class="flex items-center mt-2 space-x-3">
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                Completed
+                            </span>
+                            <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 2 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="text-gray-400 hover:text-[#861703]" title="Mark as Read">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
+                        <i class="far fa-times-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- More Notification Items -->
+        <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 hover:shadow-md transition">
+            <div class="flex justify-between">
+                <div class="flex items-start space-x-3">
+                    <div class="mt-1 text-blue-500">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Housing Application Update</h3>
+                        <p class="text-gray-600 text-sm">Your housing application status has changed to "Under Review".</p>
+                        <div class="flex items-center mt-2 space-x-3">
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                                Under Review
+                            </span>
+                            <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 1 day ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="text-gray-400 hover:text-blue-500" title="Mark as Read">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
+                        <i class="far fa-times-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500 hover:shadow-md transition">
+            <div class="flex justify-between">
+                <div class="flex items-start space-x-3">
+                    <div class="mt-1 text-green-500">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Water Bill Reminder</h3>
+                        <p class="text-gray-600 text-sm">Your water bill payment is due in 3 days.</p>
+                        <div class="flex items-center mt-2 space-x-3">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                Pending
+                            </span>
+                            <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 2 days ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="text-gray-400 hover:text-green-500" title="Mark as Read">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
+                        <i class="far fa-times-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="notification-item bg-white p-4 rounded-lg shadow-sm border-l-4 border-yellow-500 hover:shadow-md transition">
+            <div class="flex justify-between">
+                <div class="flex items-start space-x-3">
+                    <div class="mt-1 text-yellow-500">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Service Interruption</h3>
+                        <p class="text-gray-600 text-sm">Planned water outage in your area tomorrow 9AM-3PM.</p>
+                        <div class="flex items-center mt-2 space-x-3">
+                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                                Alert
+                            </span>
+                            <p class="text-xs text-gray-500"><i class="far fa-clock"></i> 3 days ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="text-gray-400 hover:text-yellow-500" title="Mark as Read">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-gray-600" title="Dismiss">
+                        <i class="far fa-times-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-6 text-center">
+        <button class="text-[#861703] hover:text-[#6a1202] text-sm font-medium">
+            <i class="fas fa-sync-alt"></i> Load Older Notifications
+        </button>
+    </div>
+</div>
+
+    
+
+        <div id="contact-section" class="section hidden">
+            <h1 class="text-2xl font-bold mb-4">Contact Us</h1>
+            <div class="contact-details active">
+                <p><strong>Email:</strong> support@fixnc.co.za</p>
+                <p><strong>Phone:</strong> +27 53 123 4567</p>
+                <p><strong>Hours:</strong> Mon-Fri, 8 AM - 5 PM SAST</p>
+            </div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-grid">
+            <button onclick="showSection('news')" class="nav-btn text-[#861703]" id="nav-news"><i class="fas fa-newspaper"></i></button>
+            <button onclick="showSection('report')" class="nav-btn text-[#861703]" id="nav-report"><i class="fas fa-exclamation-circle"></i></button>
+            <button onclick="showSection('submissions')" class="nav-btn text-[#861703]" id="nav-submissions"><i class="fas fa-list"></i></button>
+            <button onclick="showSection('programs')" class="nav-btn text-[#861703]" id="nav-programs"><i class="fas fa-graduation-cap"></i></button>
+            <button onclick="showSection('notifications')" class="nav-btn text-[#861703]" id="nav-notifications"><i class="fas fa-bell"></i></button>
+        </div>
+    </nav>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        let profileClicked = false;
+        let stream = null;
+        let capturedImages = [];
+        let watchPositionId = null;
+        let currentPosition = null;
+        let currentFacingMode = 'environment';
+
+        // DOM Elements
+        const videoPreview = document.getElementById('video-preview');
+        const photoCanvas = document.getElementById('photo-canvas');
+        const startCameraBtn = document.getElementById('start-camera-btn');
+        const capturePhotoBtn = document.getElementById('capture-photo-btn');
+        const captureBtn = document.getElementById('capture-btn');
+        const switchCameraBtn = document.getElementById('switch-camera-btn');
+        const imageGallery = document.getElementById('image-gallery');
+        const maxImagesNotice = document.getElementById('max-images-notice');
+        const gpsIndicator = document.getElementById('gps-indicator');
+        const submitIssueBtn = document.getElementById('submit-issue-btn');
+        const flashEffect = document.getElementById('flash');
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('expanded');
+            const toggleButton = document.querySelector('.menu-toggle');
+            const icon = toggleButton.querySelector('i');
+            if (sidebar.classList.contains('expanded')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        }
+
+        function handleNavItemClick(sectionId) {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('expanded')) {
+                sidebar.classList.remove('expanded');
+                const toggleButton = document.querySelector('.menu-toggle');
+                const icon = toggleButton.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+            
+            if (sectionId === 'logout') {
+                logout();
+            } else {
+                showSection(sectionId);
+                
+                // Initialize report section if needed
+                if (sectionId === 'report') {
+                    initReportSection();
+                }
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+            document.getElementById(sectionId + '-section').classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.getAttribute('onclick').includes(sectionId)) {
+                    item.classList.add('active');
+                }
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('nav-' + sectionId).classList.add('active');
+            if (sectionId !== 'profile') {
+                profileClicked = false;
+                document.querySelector('.profile-icon').classList.remove('clicked');
+            }
+        }
+
+        function initReportSection() {
+            // Clear any existing camera streams
+            if (stream) {
+                stopCamera();
+            }
+            capturedImages = [];
+            updateImageGallery();
+        }
+
+        // Camera functions
+        function startCamera() {
+            if (capturedImages.length >= 5) {
+                showMaxImagesNotice();
+                return;
+            }
+
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: currentFacingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            }).then(s => {
+                stream = s;
+                videoPreview.srcObject = stream;
+                videoPreview.classList.remove('hidden');
+                photoCanvas.classList.add('hidden');
+                capturePhotoBtn.classList.remove('hidden');
+                captureBtn.classList.remove('hidden');
+                switchCameraBtn.classList.remove('hidden');
+                startCameraBtn.classList.add('hidden');
+                startWatchingLocation();
+            }).catch(err => {
+                console.error('Camera error:', err);
+                alert('Could not access camera. Please ensure you have granted camera permissions.');
+            });
+        }
+
+        function switchCamera() {
+            if (!stream) return;
+            stream.getTracks().forEach(track => track.stop());
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            startCamera();
+        }
+
+        function capturePhoto() {
+            if (capturedImages.length >= 5) {
+                showMaxImagesNotice();
+                return;
+            }
+
+            flashEffect.classList.add('flash');
+            setTimeout(() => flashEffect.classList.remove('flash'), 500);
+
+            const context = photoCanvas.getContext('2d');
+            photoCanvas.width = videoPreview.videoWidth;
+            photoCanvas.height = videoPreview.videoHeight;
+            context.drawImage(videoPreview, 0, 0, photoCanvas.width, photoCanvas.height);
+
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const { latitude, longitude } = position.coords;
+                    const imageData = photoCanvas.toDataURL('image/jpeg', 0.8);
+                    
+                    capturedImages.push({
+                        data: imageData,
+                        latitude,
+                        longitude,
+                        timestamp: new Date().toLocaleString()
+                    });
+                    
+                    updateImageGallery();
+                    checkImageLimit();
+                    
+                    videoPreview.classList.remove('hidden');
+                    photoCanvas.classList.add('hidden');
+                },
+                error => {
+                    console.error('Geolocation error:', error);
+                    const imageData = photoCanvas.toDataURL('image/jpeg', 0.8);
+                    
+                    capturedImages.push({
+                        data: imageData,
+                        latitude: null,
+                        longitude: null,
+                        timestamp: new Date().toLocaleString(),
+                        locationError: true
+                    });
+                    
+                    updateImageGallery();
+                    checkImageLimit();
+                    
+                    videoPreview.classList.remove('hidden');
+                    photoCanvas.classList.add('hidden');
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        function updateImageGallery() {
+            imageGallery.innerHTML = '';
+            capturedImages.forEach((image, index) => {
+                const thumbnail = document.createElement('div');
+                thumbnail.className = 'image-thumbnail';
+                
+                const img = document.createElement('img');
+                img.src = image.data;
+                img.alt = `Photo ${index + 1}`;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeImage(index);
+                };
+                
+                const locationTag = document.createElement('div');
+                locationTag.className = 'location-tag';
+                
+                if (image.locationError) {
+                    locationTag.textContent = '📍 Location failed';
+                } else if (image.latitude && image.longitude) {
+                    locationTag.textContent = `📍 ${image.latitude.toFixed(5)}, ${image.longitude.toFixed(5)}`;
+                } else {
+                    locationTag.textContent = '📍 No location';
+                }
+                
+                thumbnail.appendChild(img);
+                thumbnail.appendChild(removeBtn);
+                thumbnail.appendChild(locationTag);
+                imageGallery.appendChild(thumbnail);
+            });
+        }
+
+        function removeImage(index) {
+            capturedImages.splice(index, 1);
+            updateImageGallery();
+            checkImageLimit();
+            
+            if (capturedImages.length < 5 && !stream) {
+                startCameraBtn.classList.remove('hidden');
+                capturePhotoBtn.classList.add('hidden');
+                maxImagesNotice.classList.add('hidden');
+                switchCameraBtn.classList.add('hidden');
+            }
+        }
+
+        function checkImageLimit() {
+            if (capturedImages.length >= 5) {
+                showMaxImagesNotice();
+                if (stream) stopCamera();
+            } else {
+                maxImagesNotice.classList.add('hidden');
+            }
+        }
+
+        function showMaxImagesNotice() {
+            maxImagesNotice.classList.remove('hidden');
+            capturePhotoBtn.classList.add('hidden');
+            captureBtn.classList.add('hidden');
+            switchCameraBtn.classList.add('hidden');
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            videoPreview.classList.add('hidden');
+            photoCanvas.classList.add('hidden');
+            capturePhotoBtn.classList.add('hidden');
+            captureBtn.classList.add('hidden');
+            switchCameraBtn.classList.add('hidden');
+            startCameraBtn.classList.remove('hidden');
+            
+            stopWatchingLocation();
+        }
+
+        function startWatchingLocation() {
+            gpsIndicator.classList.remove('hidden');
+            
+            watchPositionId = navigator.geolocation.watchPosition(
+                position => {
+                    const { latitude, longitude } = position.coords;
+                    currentPosition = { latitude, longitude };
+                    gpsIndicator.innerHTML = `
+                        <i class="fas fa-map-marker-alt gps-active"></i>
+                        <span>Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}</span>
+                    `;
+                },
+                error => {
+                    console.error('Geolocation error:', error);
+                    gpsIndicator.innerHTML = `
+                        <i class="fas fa-map-marker-alt gps-inactive"></i>
+                        <span>Location unavailable</span>
+                    `;
+                },
+                { 
+                    enableHighAccuracy: true,
+                    maximumAge: 10000,
+                    timeout: 5000 
+                }
+            );
+        }
+
+        function stopWatchingLocation() {
+            if (watchPositionId) {
+                navigator.geolocation.clearWatch(watchPositionId);
+                watchPositionId = null;
+            }
+            gpsIndicator.classList.add('hidden');
+        }
+
+        function submitIssue() {
+            const category = document.getElementById('issue-category').value;
+            const description = document.getElementById('issue-description').value.trim();
+
+            if (!category) {
+                alert('Please select an issue type.');
+                return;
+            }
+
+            if (!description) {
+                alert('Please provide a description of the issue.');
+                return;
+            }
+
+            if (capturedImages.length === 0) {
+                alert('Please capture at least one photo of the issue.');
+                return;
+            }
+
+            submitIssueBtn.disabled = true;
+            submitIssueBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
+
+            setTimeout(() => {
+                const issues = JSON.parse(localStorage.getItem('issues') || '[]');
+                const user = JSON.parse(localStorage.getItem('auth_user'));
+                
+                let validLocations = capturedImages.filter(img => img.latitude && img.longitude);
+                let avgLat = -29.0;
+                let avgLng = 24.0;
+                
+                if (validLocations.length > 0) {
+                    avgLat = validLocations.reduce((sum, img) => sum + img.latitude, 0) / validLocations.length;
+                    avgLng = validLocations.reduce((sum, img) => sum + img.longitude, 0) / validLocations.length;
+                }
+
+                const isDuplicate = issues.some(issue => {
+                    if (issue.status === 'Resolved') return false;
+                    const distance = calculateDistance(avgLat, avgLng, issue.latitude, issue.longitude);
+                    return distance <= 50 && issue.category === category;
+                });
+
+                if (isDuplicate) {
+                    if (confirm('A similar issue was reported nearby recently. Would you like to endorse it instead?')) {
+                        const existingIssue = issues.find(issue => {
+                            const distance = calculateDistance(avgLat, avgLng, issue.latitude, issue.longitude);
+                            return distance <= 50 && issue.category === category;
+                        });
+                        
+                        existingIssue.comments.push({
+                            user: user ? `${user.firstName} ${user.lastName}` : 'Anonymous',
+                            text: 'Endorsed this issue',
+                            timestamp: new Date().toISOString()
+                        });
+                        
+                        localStorage.setItem('issues', JSON.stringify(issues));
+                        alert('Thank you for endorsing this issue!');
+                    } else {
+                        alert('Submission cancelled.');
+                    }
+                } else {
+                    issues.push({
+                        id: Date.now().toString(),
+                        category,
+                        description,
+                        latitude: avgLat,
+                        longitude: avgLng,
+                        photos: capturedImages.map(img => ({
+                            data: img.data,
+                            latitude: img.latitude,
+                            longitude: img.longitude,
+                            timestamp: img.timestamp
+                        })),
+                        status: 'Reported',
+                        reportedBy: user ? `${user.firstName} ${user.lastName}` : 'Anonymous',
+                        reportedAt: new Date().toISOString(),
+                        comments: [],
+                        upvotes: 1
+                    });
+                    
+                    localStorage.setItem('issues', JSON.stringify(issues));
+                    alert('Issue reported successfully! Thank you for your contribution.');
+                }
+
+                document.getElementById('issue-category').value = '';
+                document.getElementById('issue-description').value = '';
+                capturedImages = [];
+                updateImageGallery();
+                stopCamera();
+                
+                submitIssueBtn.disabled = false;
+                submitIssueBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Submit Report';
+                
+                showSection('submissions');
+            }, 1500);
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3;
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180;
+            const Δλ = (lon2-lon1) * Math.PI/180;
+
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+            return R * c;
+        }
+
+        function login() {
+            window.location.href = 'auth.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('auth_user');
+            window.location.href = 'auth.html';
+        }
+
+        function saveProfile() {
+            if (!validateProfileForm()) {
+                return;
+            }
+            
+            const saveButton = document.getElementById('saveButton');
+            const spinner = document.getElementById('saveSpinner');
+            const successMessage = document.getElementById('saveSuccess');
+            
+            saveButton.disabled = true;
+            spinner.style.display = 'block';
+            hideAllErrorMessages();
+            
+            setTimeout(() => {
+                try {
+                    const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
+                    
+                    user.firstName = document.getElementById('profile-first-name').value.trim();
+                    user.lastName = document.getElementById('profile-last-name').value.trim();
+                    user.email = document.getElementById('profile-email').value.trim();
+                    user.username = document.getElementById('profile-username').value.trim();
+                    
+                    let rawPhone = document.getElementById('profile-phone').value.trim().replace(/\s+/g, '');
+                    if (rawPhone.length === 9) {
+                        user.phone = '+27' + rawPhone;
+                    } else {
+                        showError('phone-error', 'Please enter a valid 9-digit phone number');
+                        document.getElementById('profile-phone').parentElement.classList.add('input-error');
+                        throw new Error('Invalid phone number');
+                    }
+                    
+                    user.birthDate = document.getElementById('profile-birthdate').value;
+                    user.securityQuestion = document.getElementById('profile-security-question').value;
+                    user.securityAnswer = document.getElementById('profile-security-answer').value.trim();
+                    
+                    localStorage.setItem('auth_user', JSON.stringify(user));
+                    
+                    spinner.style.display = 'none';
+                    successMessage.textContent = 'Profile updated successfully!';
+                    successMessage.style.display = 'block';
+                    
+                    loadProfileDetails();
+                    
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                        saveButton.disabled = false;
+                    }, 3000);
+                } catch (error) {
+                    console.error('Error saving profile:', error);
+                    spinner.style.display = 'none';
+                    saveButton.disabled = false;
+                }
+            }, 1500);
+        }
+
+        function validateProfileForm() {
+            let isValid = true;
+            
+            isValid = validateField('profile-first-name', 'first-name-error', value => value.trim().length > 0, 'Please enter your first name') && isValid;
+            isValid = validateField('profile-last-name', 'last-name-error', value => value.trim().length > 0, 'Please enter your last name') && isValid;
+            isValid = validateField('profile-email', 'email-error', value => {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(value.trim());
+            }, 'Please enter a valid email address') && isValid;
+            isValid = validateField('profile-username', 'username-error', value => value.trim().length >= 4, 'Username must be at least 4 characters') && isValid;
+            isValid = validateField('profile-phone', 'phone-error', value => {
+                const digits = value.replace(/\s+/g, '');
+                return digits.length === 9 && /^\d+$/.test(digits);
+            }, 'Please enter a valid 9-digit phone number') && isValid;
+            isValid = validateField('profile-birthdate', 'birthdate-error', value => value.trim().length > 0, 'Please select your date of birth') && isValid;
+            isValid = validateField('profile-security-question', 'security-question-error', value => value.trim().length > 0, 'Please select a security question') && isValid;
+            isValid = validateField('profile-security-answer', 'security-answer-error', value => value.trim().length > 0, 'Please provide an answer') && isValid;
+            
+            return isValid;
+        }
+
+        function validateField(inputId, errorId, validationFn, errorMessage) {
+            const input = document.getElementById(inputId);
+            const errorElement = document.getElementById(errorId);
+            const inputWrapper = input.parentElement;
+            const value = input.value;
+            
+            if (!validationFn(value)) {
+                showError(errorId, errorMessage);
+                inputWrapper.classList.add('input-error');
+                return false;
+            } else {
+                hideError(errorId);
+                inputWrapper.classList.remove('input-error');
+                return true;
+            }
+        }
+
+        function showError(errorId, message) {
+            const errorElement = document.getElementById(errorId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function hideError(errorId) {
+            const errorElement = document.getElementById(errorId);
+            errorElement.style.display = 'none';
+        }
+
+        function hideAllErrorMessages() {
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.querySelectorAll('.profile-input-wrapper').forEach(el => {
+                el.classList.remove('input-error');
+            });
+        }
+
+        function loadProfileDetails() {
+            const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
+            
+            document.getElementById('profile-first-name').value = user.firstName || '';
+            document.getElementById('profile-last-name').value = user.lastName || '';
+            document.getElementById('profile-email').value = user.email || '';
+            document.getElementById('profile-username').value = user.username || '';
+            
+            const phone = (user.phone || '').replace('+27', '');
+            document.getElementById('profile-phone').value = phone;
+            
+            document.getElementById('profile-birthdate').value = user.birthDate || '';
+            document.getElementById('profile-security-question').value = user.securityQuestion || '';
+            document.getElementById('profile-security-answer').value = user.securityAnswer || '';
+        }
+
+        function handleProfileClick() {
+            profileClicked = true;
+            document.querySelector('.profile-icon').classList.add('clicked');
+            showSection('profile');
+            setTimeout(() => {
+                document.querySelector('.profile-icon').classList.remove('clicked');
+            }, 500);
+        }
+
+        function closeProfileSection() {
+            showSection('news');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('auth_user'));
+            if (!user) {
+                showSection('login');
+            } else {
+                showSection('news');
+            }
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('expanded')) {
+                sidebar.classList.remove('expanded');
+            }
+            loadProfileDetails();
+        });
+
+        // Initialize report section when shown
+        document.getElementById('nav-report').addEventListener('click', function(e) {
+            e.preventDefault();
+            showSection('report');
+            initReportSection();
+        });
+    </script>
+    <script src="css/javascript/programs.js"></script>
+    <script src="css/javascript/notifications.js"></script>
+    
+
+</body>
+</html>

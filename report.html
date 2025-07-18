@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixNC - Report Issue</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        /* Custom styles for the camera interface */
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .video-preview {
+            width: 100%;
+            background: #000;
+            display: block;
+        }
+        
+        .photo-canvas {
+            width: 100%;
+            display: none;
+            background: #f0f0f0;
+        }
+        
+        .camera-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 10;
+        }
+        
+        .capture-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .capture-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .capture-btn-inner {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #861703;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.2s;
+        }
+        
+        .capture-btn:active .capture-btn-inner {
+            transform: scale(0.9);
+        }
+        
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .image-thumbnail {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 100px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .image-thumbnail:hover {
+            transform: scale(1.05);
+        }
+        
+        .image-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 2;
+        }
+        
+        .location-tag {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 10px;
+            max-width: calc(100% - 10px);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            z-index: 2;
+        }
+        
+        .max-images-notice {
+            background: #861703;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .gps-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 10;
+        }
+        
+        .gps-active {
+            color: #4ade80;
+        }
+        
+        .gps-inactive {
+            color: #f87171;
+        }
+        
+        /* Map styles */
+        #location-map {
+            height: 300px;
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 20px;
+            z-index: 1;
+        }
+        
+        .map-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .map-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        /* Cool camera button animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Flash effect */
+        .flash-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .flash {
+            animation: flash 0.5s ease-out;
+        }
+        
+        @keyframes flash {
+            0% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+        
+        /* Switch camera button */
+        .switch-camera-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Report an Issue</h1>
+        
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="issue-category">
+                Issue Type
+            </label>
+            <select id="issue-category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#861703] focus:border-[#861703]">
+                <option value="">Select issue type</option>
+                <option value="Pothole">Pothole</option>
+                <option value="Burst Pipe">Burst Pipe</option>
+                <option value="Street Light">Street Light</option>
+                <option value="Graffiti">Graffiti</option>
+                <option value="Illegal Dumping">Illegal Dumping</option>
+            </select>
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="issue-description">
+                Description
+            </label>
+            <textarea id="issue-description" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#861703] focus:border-[#861703]" placeholder="Please describe the issue in detail..."></textarea>
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2">
+                Photo Evidence (Max 5)
+            </label>
+            
+            <div class="camera-container mb-4">
+                <div id="flash" class="flash-effect"></div>
+                <video id="video-preview" class="video-preview hidden" autoplay playsinline></video>
+                <canvas id="photo-canvas" class="photo-canvas"></canvas>
+                
+                <div id="gps-indicator" class="gps-indicator hidden">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Acquiring location...</span>
+                </div>
+                
+                <div class="camera-controls">
+                    <button id="capture-btn" class="capture-btn hidden pulse-animation">
+                        <div class="capture-btn-inner"></div>
+                    </button>
+                </div>
+                
+                <button id="switch-camera-btn" class="switch-camera-btn hidden">
+                    <i class="fas fa-camera-retro"></i>
+                </button>
+            </div>
+            
+            <div class="flex gap-4 mb-4">
+                <button id="start-camera-btn" class="bg-[#861703] text-white px-4 py-2 rounded-lg hover:bg-[#6a1202] transition flex items-center">
+                    <i class="fas fa-camera mr-2"></i> Start Camera
+                </button>
+                
+                <button id="capture-photo-btn" class="bg-[#861703] text-white px-4 py-2 rounded-lg hover:bg-[#6a1202] transition hidden flex items-center">
+                    <i class="fas fa-camera-retro mr-2"></i> Take Photo
+                </button>
+            </div>
+            
+            <div id="max-images-notice" class="max-images-notice hidden">
+                <i class="fas fa-info-circle mr-2"></i> You've reached the maximum of 5 photos
+            </div>
+            
+            <div id="image-gallery" class="gallery-container"></div>
+        </div>
+        
+        <div class="map-container">
+            <div class="map-overlay">
+                <i class="fas fa-map-marked-alt mr-1"></i>
+                <span id="map-info">Photo locations will appear here</span>
+            </div>
+            <div id="location-map"></div>
+        </div>
+        
+        <button id="submit-issue-btn" class="w-full bg-[#861703] text-white py-3 rounded-lg font-bold hover:bg-[#6a1202] transition flex items-center justify-center">
+            <i class="fas fa-paper-plane mr-2"></i> Submit Report
+        </button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        let stream = null;
+        let capturedImages = [];
+        let watchPositionId = null;
+        let currentPosition = null;
+        let map = null;
+        let markers = [];
+        let currentFacingMode = 'environment'; // 'user' for front camera, 'environment' for rear
+
+        // DOM Elements
+        const videoPreview = document.getElementById('video-preview');
+        const photoCanvas = document.getElementById('photo-canvas');
+        const startCameraBtn = document.getElementById('start-camera-btn');
+        const capturePhotoBtn = document.getElementById('capture-photo-btn');
+        const captureBtn = document.getElementById('capture-btn');
+        const switchCameraBtn = document.getElementById('switch-camera-btn');
+        const imageGallery = document.getElementById('image-gallery');
+        const maxImagesNotice = document.getElementById('max-images-notice');
+        const gpsIndicator = document.getElementById('gps-indicator');
+        const submitIssueBtn = document.getElementById('submit-issue-btn');
+        const flashEffect = document.getElementById('flash');
+        const mapInfo = document.getElementById('map-info');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            startCameraBtn.addEventListener('click', startCamera);
+            capturePhotoBtn.addEventListener('click', capturePhoto);
+            captureBtn.addEventListener('click', capturePhoto);
+            switchCameraBtn.addEventListener('click', switchCamera);
+            submitIssueBtn.addEventListener('click', submitIssue);
+            
+            // Initialize map
+            initMap();
+            
+            // Check if user is authenticated
+            if (!isAuthenticated()) {
+                alert('Please log in to report issues.');
+                login();
+            }
+        });
+
+        function initMap() {
+            // Default to Kimberley coordinates
+            map = L.map('location-map').setView([-29.0, 24.0], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Add a marker for the current position if available
+            if (currentPosition) {
+                updateMapWithCurrentPosition();
+            }
+        }
+
+        function updateMapWithCurrentPosition() {
+            // Clear existing markers except photo markers
+            markers.forEach(marker => {
+                if (marker.options.isCurrentPosition) {
+                    map.removeLayer(marker);
+                }
+            });
+            
+            // Add current position marker
+            const currentMarker = L.marker(
+                [currentPosition.latitude, currentPosition.longitude], 
+                {
+                    icon: L.divIcon({
+                        className: 'current-position-marker',
+                        html: '<div class="animate-ping absolute inline-flex h-4 w-4 rounded-full bg-blue-400 opacity-75"></div><div class="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></div>',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    }),
+                    isCurrentPosition: true
+                }
+            ).addTo(map);
+            
+            markers.push(currentMarker);
+            
+            // Update map view
+            map.setView([currentPosition.latitude, currentPosition.longitude], 15);
+        }
+
+        function updateMapWithPhotoLocations() {
+            // Clear existing photo markers
+            markers.forEach(marker => {
+                if (!marker.options.isCurrentPosition) {
+                    map.removeLayer(marker);
+                }
+            });
+            
+            // Add markers for each photo with location
+            capturedImages.forEach((image, index) => {
+                if (image.latitude && image.longitude) {
+                    const photoMarker = L.marker(
+                        [image.latitude, image.longitude],
+                        {
+                            icon: L.divIcon({
+                                className: 'photo-marker',
+                                html: `<div class="relative flex items-center justify-center">
+                                    <div class="absolute animate-ping inline-flex h-6 w-6 rounded-full bg-red-400 opacity-75"></div>
+                                    <div class="relative inline-flex rounded-full h-5 w-5 bg-red-600 text-white text-xs items-center justify-center font-bold">${index + 1}</div>
+                                </div>`,
+                                iconSize: [24, 24],
+                                iconAnchor: [12, 12]
+                            })
+                        }
+                    ).addTo(map);
+                    
+                    // Add popup with thumbnail
+                    photoMarker.bindPopup(`
+                        <div class="p-2">
+                            <img src="${image.data}" alt="Photo ${index + 1}" class="w-full h-auto rounded">
+                            <div class="text-xs mt-1 text-gray-600">${image.timestamp}</div>
+                        </div>
+                    `);
+                    
+                    markers.push(photoMarker);
+                }
+            });
+            
+            // Update map info
+            const photosWithLocation = capturedImages.filter(img => img.latitude && img.longitude).length;
+            mapInfo.textContent = photosWithLocation > 0 
+                ? `${photosWithLocation} photo location${photosWithLocation > 1 ? 's' : ''} marked` 
+                : 'Photo locations will appear here';
+            
+            // Fit bounds to show all markers if we have any
+            if (markers.length > 0) {
+                const markerGroup = new L.featureGroup(markers);
+                map.fitBounds(markerGroup.getBounds().pad(0.2));
+            }
+        }
+
+        function startCamera() {
+            if (capturedImages.length >= 5) {
+                showMaxImagesNotice();
+                return;
+            }
+
+            // Request camera access
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: currentFacingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            })
+            .then(s => {
+                stream = s;
+                videoPreview.srcObject = stream;
+                videoPreview.classList.remove('hidden');
+                photoCanvas.classList.add('hidden');
+                capturePhotoBtn.classList.remove('hidden');
+                captureBtn.classList.remove('hidden');
+                switchCameraBtn.classList.remove('hidden');
+                startCameraBtn.classList.add('hidden');
+                
+                // Start watching GPS position
+                startWatchingLocation();
+            })
+            .catch(err => {
+                console.error('Camera error:', err);
+                alert('Could not access camera. Please ensure you have granted camera permissions.');
+            });
+        }
+
+        function switchCamera() {
+            if (!stream) return;
+            
+            // Stop current stream
+            stream.getTracks().forEach(track => track.stop());
+            
+            // Switch facing mode
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            
+            // Restart camera with new facing mode
+            startCamera();
+        }
+
+        function startWatchingLocation() {
+            gpsIndicator.classList.remove('hidden');
+            
+            watchPositionId = navigator.geolocation.watchPosition(
+                position => {
+                    const { latitude, longitude } = position.coords;
+                    currentPosition = { latitude, longitude };
+                    
+                    gpsIndicator.innerHTML = `
+                        <i class="fas fa-map-marker-alt gps-active"></i>
+                        <span>Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}</span>
+                    `;
+                    
+                    // Update map with current position
+                    updateMapWithCurrentPosition();
+                },
+                error => {
+                    console.error('Geolocation error:', error);
+                    gpsIndicator.innerHTML = `
+                        <i class="fas fa-map-marker-alt gps-inactive"></i>
+                        <span>Location unavailable</span>
+                    `;
+                },
+                { 
+                    enableHighAccuracy: true,
+                    maximumAge: 10000,
+                    timeout: 5000 
+                }
+            );
+        }
+
+        function stopWatchingLocation() {
+            if (watchPositionId) {
+                navigator.geolocation.clearWatch(watchPositionId);
+                watchPositionId = null;
+            }
+            gpsIndicator.classList.add('hidden');
+        }
+
+        function capturePhoto() {
+            if (capturedImages.length >= 5) {
+                showMaxImagesNotice();
+                return;
+            }
+
+            // Trigger flash effect
+            flashEffect.classList.add('flash');
+            setTimeout(() => flashEffect.classList.remove('flash'), 500);
+
+            const context = photoCanvas.getContext('2d');
+            photoCanvas.width = videoPreview.videoWidth;
+            photoCanvas.height = videoPreview.videoHeight;
+            context.drawImage(videoPreview, 0, 0, photoCanvas.width, photoCanvas.height);
+
+            // Get current location
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const { latitude, longitude } = position.coords;
+                    const imageData = photoCanvas.toDataURL('image/jpeg', 0.8);
+                    
+                    capturedImages.push({
+                        data: imageData,
+                        latitude,
+                        longitude,
+                        timestamp: new Date().toLocaleString()
+                    });
+                    
+                    updateImageGallery();
+                    checkImageLimit();
+                    updateMapWithPhotoLocations();
+                    
+                    // Switch back to video preview for next capture
+                    videoPreview.classList.remove('hidden');
+                    photoCanvas.classList.add('hidden');
+                },
+                error => {
+                    console.error('Geolocation error:', error);
+                    const imageData = photoCanvas.toDataURL('image/jpeg', 0.8);
+                    
+                    capturedImages.push({
+                        data: imageData,
+                        latitude: null,
+                        longitude: null,
+                        timestamp: new Date().toLocaleString(),
+                        locationError: true
+                    });
+                    
+                    updateImageGallery();
+                    checkImageLimit();
+                    
+                    // Switch back to video preview for next capture
+                    videoPreview.classList.remove('hidden');
+                    photoCanvas.classList.add('hidden');
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        function updateImageGallery() {
+            imageGallery.innerHTML = '';
+            
+            capturedImages.forEach((image, index) => {
+                const thumbnail = document.createElement('div');
+                thumbnail.className = 'image-thumbnail';
+                thumbnail.onclick = () => showImageOnMap(index);
+                
+                const img = document.createElement('img');
+                img.src = image.data;
+                img.alt = `Photo ${index + 1}`;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeImage(index);
+                };
+                
+                const locationTag = document.createElement('div');
+                locationTag.className = 'location-tag';
+                
+                if (image.locationError) {
+                    locationTag.textContent = '📍 Location failed';
+                    locationTag.title = 'Could not retrieve location for this photo';
+                } else if (image.latitude && image.longitude) {
+                    locationTag.textContent = `📍 ${image.latitude.toFixed(5)}, ${image.longitude.toFixed(5)}`;
+                    locationTag.title = `Lat: ${image.latitude}, Long: ${image.longitude}`;
+                } else {
+                    locationTag.textContent = '📍 No location';
+                    locationTag.title = 'No location data available';
+                }
+                
+                thumbnail.appendChild(img);
+                thumbnail.appendChild(removeBtn);
+                thumbnail.appendChild(locationTag);
+                imageGallery.appendChild(thumbnail);
+            });
+        }
+
+        function showImageOnMap(index) {
+            const image = capturedImages[index];
+            if (image.latitude && image.longitude) {
+                map.setView([image.latitude, image.longitude], 18);
+                
+                // Highlight the selected marker
+                markers.forEach((marker, i) => {
+                    if (!marker.options.isCurrentPosition && i === index) {
+                        marker.openPopup();
+                    }
+                });
+            } else {
+                alert('This photo has no location data.');
+            }
+        }
+
+        function removeImage(index) {
+            capturedImages.splice(index, 1);
+            updateImageGallery();
+            updateMapWithPhotoLocations();
+            checkImageLimit();
+            
+            // If we're below max and camera isn't running, show start button
+            if (capturedImages.length < 5 && !stream) {
+                startCameraBtn.classList.remove('hidden');
+                capturePhotoBtn.classList.add('hidden');
+                maxImagesNotice.classList.add('hidden');
+                switchCameraBtn.classList.add('hidden');
+            }
+        }
+
+        function checkImageLimit() {
+            if (capturedImages.length >= 5) {
+                showMaxImagesNotice();
+                
+                // Stop camera if running
+                if (stream) {
+                    stopCamera();
+                }
+            } else {
+                maxImagesNotice.classList.add('hidden');
+            }
+        }
+
+        function showMaxImagesNotice() {
+            maxImagesNotice.classList.remove('hidden');
+            capturePhotoBtn.classList.add('hidden');
+            captureBtn.classList.add('hidden');
+            switchCameraBtn.classList.add('hidden');
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            videoPreview.classList.add('hidden');
+            photoCanvas.classList.add('hidden');
+            capturePhotoBtn.classList.add('hidden');
+            captureBtn.classList.add('hidden');
+            switchCameraBtn.classList.add('hidden');
+            startCameraBtn.classList.remove('hidden');
+            
+            stopWatchingLocation();
+        }
+
+        function submitIssue() {
+            const category = document.getElementById('issue-category').value;
+            const description = document.getElementById('issue-description').value.trim();
+
+            if (!category) {
+                alert('Please select an issue type.');
+                return;
+            }
+
+            if (!description) {
+                alert('Please provide a description of the issue.');
+                return;
+            }
+
+            if (capturedImages.length === 0) {
+                alert('Please capture at least one photo of the issue.');
+                return;
+            }
+
+            // Show loading state
+            submitIssueBtn.disabled = true;
+            submitIssueBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
+
+            // Simulate API call
+            setTimeout(() => {
+                const issues = JSON.parse(localStorage.getItem('issues') || '[]');
+                const user = JSON.parse(localStorage.getItem('auth_user'));
+                
+                // Find average location from all photos that have location
+                let validLocations = capturedImages.filter(img => img.latitude && img.longitude);
+                let avgLat = -29.0; // Default to Kimberley coordinates
+                let avgLng = 24.0;
+                
+                if (validLocations.length > 0) {
+                    avgLat = validLocations.reduce((sum, img) => sum + img.latitude, 0) / validLocations.length;
+                    avgLng = validLocations.reduce((sum, img) => sum + img.longitude, 0) / validLocations.length;
+                }
+
+                // Check for duplicate issues nearby
+                const isDuplicate = issues.some(issue => {
+                    if (issue.status === 'Resolved') return false;
+                    const distance = calculateDistance(avgLat, avgLng, issue.latitude, issue.longitude);
+                    return distance <= 50 && issue.category === category; // 50 meters radius
+                });
+
+                if (isDuplicate) {
+                    if (confirm('A similar issue was reported nearby recently. Would you like to endorse it instead?')) {
+                        const existingIssue = issues.find(issue => {
+                            const distance = calculateDistance(avgLat, avgLng, issue.latitude, issue.longitude);
+                            return distance <= 50 && issue.category === category;
+                        });
+                        
+                        existingIssue.comments.push({
+                            user: user ? `${user.firstName} ${user.lastName}` : 'Anonymous',
+                            text: 'Endorsed this issue',
+                            timestamp: new Date().toISOString()
+                        });
+                        
+                        localStorage.setItem('issues', JSON.stringify(issues));
+                        alert('Thank you for endorsing this issue!');
+                    } else {
+                        alert('Submission cancelled.');
+                    }
+                } else {
+                    // Create new issue
+                    issues.push({
+                        id: Date.now().toString(),
+                        category,
+                        description,
+                        latitude: avgLat,
+                        longitude: avgLng,
+                        photos: capturedImages.map(img => ({
+                            data: img.data,
+                            latitude: img.latitude,
+                            longitude: img.longitude,
+                            timestamp: img.timestamp
+                        })),
+                        status: 'Reported',
+                        reportedBy: user ? `${user.firstName} ${user.lastName}` : 'Anonymous',
+                        reportedAt: new Date().toISOString(),
+                        comments: [],
+                        upvotes: 1
+                    });
+                    
+                    localStorage.setItem('issues', JSON.stringify(issues));
+                    alert('Issue reported successfully! Thank you for your contribution.');
+                }
+
+                // Reset form
+                document.getElementById('issue-category').value = '';
+                document.getElementById('issue-description').value = '';
+                capturedImages = [];
+                updateImageGallery();
+                updateMapWithPhotoLocations();
+                stopCamera();
+                
+                // Restore button state
+                submitIssueBtn.disabled = false;
+                submitIssueBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Submit Report';
+                
+                // Redirect to submissions or show success
+                showSection('submissions');
+            }, 1500);
+        }
+
+        // Helper functions
+        function isAuthenticated() {
+            return !!localStorage.getItem('auth_user');
+        }
+
+        function login() {
+            window.location.href = 'auth.html';
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Earth radius in meters
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180;
+            const Δλ = (lon2-lon1) * Math.PI/180;
+
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+            return R * c;
+        }
+
+        function showSection(sectionId) {
+            // Implementation depends on your app's navigation structure
+            console.log(`Showing section: ${sectionId}`);
+        }
+    </script>
+</body>
+</html>
