@@ -19,7 +19,7 @@
         .sidebar {
             width: 0;
             background: #fff;
-            height: calc(100vh - 60px);
+            height: calc(97vh - 60px);
             position: fixed;
             top: 60px;
             left: 0;
@@ -808,6 +808,43 @@
     transform: none;
     box-shadow: none;
 }
+/* Map styles */
+#location-map {
+    height: 300px;
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 20px;
+    z-index: 1;
+}
+
+.map-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.map-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    background: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.current-position-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
     </style>
 </head>
 <body class="bg-gray-100">
@@ -857,6 +894,8 @@
             </div>
         </div>
 
+        
+
         <div id="report-section" class="section hidden">
             <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
                 <h1 class="text-2xl font-bold text-gray-800 mb-6">Report an Issue</h1>
@@ -887,6 +926,14 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2">
                         Photo Evidence (Max 5)
                     </label>
+
+                                        <div class="map-container mb-4">
+                             <div class="map-overlay">
+                          <i class="fas fa-map-marked-alt mr-1"></i>
+                          <span id="map-info">Photo locations will appear here</span>
+                             </div>
+                            <div id="location-map" style="height: 300px; width: 100%; border-radius: 12px;"></div>
+                                 </div>
                     
                     <div class="camera-container mb-4">
                         <div id="flash" class="flash-effect"></div>
@@ -897,6 +944,8 @@
                             <i class="fas fa-map-marker-alt"></i>
                             <span>Acquiring location...</span>
                         </div>
+
+   
                         
                         <div class="camera-controls">
                             <button id="capture-btn" class="capture-btn hidden">
@@ -1536,6 +1585,8 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
+        let map;
+        let markers = [];
         let profileClicked = false;
         let stream = null;
         let capturedImages = [];
@@ -1558,6 +1609,118 @@
         const flashEffect = document.getElementById('flash');
         const cameraError = document.getElementById('camera-error');
         const cameraErrorMessage = document.getElementById('camera-error-message');
+
+
+            function initMap() {
+    // Default to Kimberley coordinates
+    map = L.map('location-map').setView([-29.0, 24.0], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Add a marker for the current position if available
+    if (currentPosition) {
+        updateMapWithCurrentPosition();
+    }
+}
+
+function updateMapWithCurrentPosition() {
+    // Clear existing markers except photo markers
+    markers.forEach(marker => {
+        if (marker.options.isCurrentPosition) {
+            map.removeLayer(marker);
+        }
+    });
+    
+    // Add current position marker
+    const currentMarker = L.marker(
+        [currentPosition.latitude, currentPosition.longitude], 
+        {
+            icon: L.divIcon({
+                className: 'current-position-marker',
+                html: '<div class="animate-ping absolute inline-flex h-4 w-4 rounded-full bg-blue-400 opacity-75"></div><div class="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></div>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            }),
+            isCurrentPosition: true
+        }
+    ).addTo(map);
+    
+    markers.push(currentMarker);
+    
+    // Update map view
+    map.setView([currentPosition.latitude, currentPosition.longitude], 15);
+}
+
+function updateMapWithPhotoLocations() {
+    // Clear existing photo markers
+    markers.forEach(marker => {
+        if (!marker.options.isCurrentPosition) {
+            map.removeLayer(marker);
+        }
+    });
+    
+    // Add markers for each photo with location
+    capturedImages.forEach((image, index) => {
+        if (image.latitude && image.longitude) {
+            const photoMarker = L.marker(
+                [image.latitude, image.longitude],
+                {
+                    icon: L.divIcon({
+                        className: 'photo-marker',
+                        html: `<div class="relative flex items-center justify-center">
+                            <div class="absolute animate-ping inline-flex h-6 w-6 rounded-full bg-red-400 opacity-75"></div>
+                            <div class="relative inline-flex rounded-full h-5 w-5 bg-red-600 text-white text-xs items-center justify-center font-bold">${index + 1}</div>
+                        </div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                }
+            ).addTo(map);
+            
+            // Add popup with thumbnail
+            photoMarker.bindPopup(`
+                <div class="p-2">
+                    <img src="${image.data}" alt="Photo ${index + 1}" class="w-full h-auto rounded">
+                    <div class="text-xs mt-1 text-gray-600">${image.timestamp}</div>
+                </div>
+            `);
+            
+            markers.push(photoMarker);
+        }
+    });
+    
+    // Update map info
+    const photosWithLocation = capturedImages.filter(img => img.latitude && img.longitude).length;
+    document.getElementById('map-info').textContent = photosWithLocation > 0 
+        ? `${photosWithLocation} photo location${photosWithLocation > 1 ? 's' : ''} marked` 
+        : 'Photo locations will appear here';
+    
+    // Fit bounds to show all markers if we have any
+    if (markers.length > 0) {
+        const markerGroup = new L.featureGroup(markers);
+        map.fitBounds(markerGroup.getBounds().pad(0.2));
+    }
+}
+
+function showImageOnMap(index) {
+    const image = capturedImages[index];
+    if (image.latitude && image.longitude) {
+        map.setView([image.latitude, image.longitude], 18);
+        
+        // Highlight the selected marker
+        markers.forEach((marker, i) => {
+            if (!marker.options.isCurrentPosition && i === index) {
+                marker.openPopup();
+            }
+        });
+    } else {
+        alert('This photo has no location data.');
+    }
+}
+
+
 
         // Check camera support on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -1636,16 +1799,19 @@
                 document.querySelector('.profile-icon').classList.remove('clicked');
             }
         }
-
-        function initReportSection() {
-            // Clear any existing camera streams
-            if (stream) {
-                stopCamera();
-            }
-            capturedImages = [];
-            updateImageGallery();
-            hideCameraError();
-        }
+           
+   function initReportSection() {
+    // Clear any existing camera streams
+    if (stream) {
+        stopCamera();
+    }
+    capturedImages = [];
+    updateImageGallery();
+    hideCameraError();
+    
+    // Initialize map
+    initMap();
+}
 
         async function startCamera() {
             if (!isCameraSupported) return;
@@ -1724,61 +1890,62 @@
             startCamera();
         }
 
-        async function capturePhoto() {
-            if (capturedImages.length >= 5) {
-                showMaxImagesNotice();
-                return;
-            }
+       async function capturePhoto() {
+    if (capturedImages.length >= 5) {
+        showMaxImagesNotice();
+        return;
+    }
 
-            try {
-                // Show flash effect
-                flashEffect.classList.add('flash');
-                setTimeout(() => flashEffect.classList.remove('flash'), 500);
+    try {
+        // Show flash effect
+        flashEffect.classList.add('flash');
+        setTimeout(() => flashEffect.classList.remove('flash'), 500);
 
-                // Prepare canvas
-                const context = photoCanvas.getContext('2d');
-                photoCanvas.width = videoPreview.videoWidth;
-                photoCanvas.height = videoPreview.videoHeight;
-                context.drawImage(videoPreview, 0, 0, photoCanvas.width, photoCanvas.height);
+        // Prepare canvas
+        const context = photoCanvas.getContext('2d');
+        photoCanvas.width = videoPreview.videoWidth;
+        photoCanvas.height = videoPreview.videoHeight;
+        context.drawImage(videoPreview, 0, 0, photoCanvas.width, photoCanvas.height);
 
-                // Get location if available
-                let location = null;
-                try {
-                    location = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(
-                            position => resolve(position.coords),
-                            error => reject(error),
-                            { enableHighAccuracy: true, timeout: 5000 }
-                        );
-                    });
-                } catch (geoError) {
-                    console.warn('Geolocation error:', geoError);
-                }
-
-                // Compress image before storing
-                const imageData = await compressImage(photoCanvas.toDataURL('image/jpeg', 0.8));
-                
-                // Store the captured photo
-                capturedImages.push({
-                    data: imageData,
-                    latitude: location?.latitude || null,
-                    longitude: location?.longitude || null,
-                    timestamp: new Date().toLocaleString(),
-                    locationError: !location
-                });
-                
-                updateImageGallery();
-                checkImageLimit();
-                
-                // Hide photo canvas and show video again
-                videoPreview.classList.remove('hidden');
-                photoCanvas.classList.add('hidden');
-                
-            } catch (error) {
-                console.error('Error capturing photo:', error);
-                showCameraError('Failed to capture photo. Please try again.');
-            }
+        // Get location if available
+        let location = null;
+        try {
+            location = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(
+                    position => resolve(position.coords),
+                    error => reject(error),
+                    { enableHighAccuracy: true, timeout: 5000 }
+                );
+            });
+        } catch (geoError) {
+            console.warn('Geolocation error:', geoError);
         }
+
+        // Compress image before storing
+        const imageData = await compressImage(photoCanvas.toDataURL('image/jpeg', 0.8));
+        
+        // Store the captured photo
+        capturedImages.push({
+            data: imageData,
+            latitude: location?.latitude || null,
+            longitude: location?.longitude || null,
+            timestamp: new Date().toLocaleString(),
+            locationError: !location
+        });
+        
+        updateImageGallery();
+        updateMapWithPhotoLocations(); // Add this line
+        checkImageLimit();
+        
+        // Hide photo canvas and show video again
+        videoPreview.classList.remove('hidden');
+        photoCanvas.classList.add('hidden');
+        
+    } catch (error) {
+        console.error('Error capturing photo:', error);
+        showCameraError('Failed to capture photo. Please try again.');
+    }
+}
 
         function compressImage(dataUrl, quality = 0.7) {
             return new Promise((resolve) => {
@@ -1808,47 +1975,45 @@
             });
         }
 
-        function updateImageGallery() {
-            imageGallery.innerHTML = '';
-            
-            capturedImages.forEach((image, index) => {
-                const thumbnail = document.createElement('div');
-                thumbnail.className = 'image-thumbnail';
-                
-                const img = document.createElement('img');
-                img.src = image.data;
-                img.alt = `Photo ${index + 1}`;
-                img.loading = "lazy";
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-btn';
-                removeBtn.innerHTML = '&times;';
-                removeBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    removeImage(index);
-                };
-                
-                const locationTag = document.createElement('div');
-                locationTag.className = 'location-tag';
-                
-                if (image.locationError) {
-                    locationTag.textContent = '📍 Location failed';
-                } else if (image.latitude && image.longitude) {
-                    locationTag.textContent = `📍 ${image.latitude.toFixed(5)}, ${image.longitude.toFixed(5)}`;
-                } else {
-                    locationTag.textContent = '📍 No location';
-                }
-                
-                thumbnail.appendChild(img);
-                thumbnail.appendChild(removeBtn);
-                thumbnail.appendChild(locationTag);
-                
-                // Add click to view larger
-                thumbnail.addEventListener('click', () => viewImage(image.data));
-                
-                imageGallery.appendChild(thumbnail);
-            });
+       function updateImageGallery() {
+    imageGallery.innerHTML = '';
+    
+    capturedImages.forEach((image, index) => {
+        const thumbnail = document.createElement('div');
+        thumbnail.className = 'image-thumbnail';
+        thumbnail.onclick = () => showImageOnMap(index); // Add this line
+        
+        const img = document.createElement('img');
+        img.src = image.data;
+        img.alt = `Photo ${index + 1}`;
+        img.loading = "lazy";
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.innerHTML = '&times;';
+        removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            removeImage(index);
+        };
+        
+        const locationTag = document.createElement('div');
+        locationTag.className = 'location-tag';
+        
+        if (image.locationError) {
+            locationTag.textContent = '📍 Location failed';
+        } else if (image.latitude && image.longitude) {
+            locationTag.textContent = `📍 ${image.latitude.toFixed(5)}, ${image.longitude.toFixed(5)}`;
+        } else {
+            locationTag.textContent = '📍 No location';
         }
+        
+        thumbnail.appendChild(img);
+        thumbnail.appendChild(removeBtn);
+        thumbnail.appendChild(locationTag);
+        
+        imageGallery.appendChild(thumbnail);
+    });
+}
 
         function viewImage(dataUrl) {
             // Create modal to view larger image
@@ -1865,18 +2030,19 @@
             document.body.appendChild(modal);
         }
 
-        function removeImage(index) {
-            capturedImages.splice(index, 1);
-            updateImageGallery();
-            checkImageLimit();
-            
-            if (capturedImages.length < 5 && !stream) {
-                startCameraBtn.classList.remove('hidden');
-                capturePhotoBtn.classList.add('hidden');
-                maxImagesNotice.classList.add('hidden');
-                switchCameraBtn.classList.add('hidden');
-            }
-        }
+    function removeImage(index) {
+    capturedImages.splice(index, 1);
+    updateImageGallery();
+    updateMapWithPhotoLocations(); // Add this line
+    checkImageLimit();
+    
+    if (capturedImages.length < 5 && !stream) {
+        startCameraBtn.classList.remove('hidden');
+        capturePhotoBtn.classList.add('hidden');
+        maxImagesNotice.classList.add('hidden');
+        switchCameraBtn.classList.add('hidden');
+    }
+}
 
         function checkImageLimit() {
             if (capturedImages.length >= 5) {
@@ -1911,31 +2077,34 @@
         }
 
         function startWatchingLocation() {
-            gpsIndicator.classList.remove('hidden');
+    gpsIndicator.classList.remove('hidden');
+    
+    watchPositionId = navigator.geolocation.watchPosition(
+        position => {
+            const { latitude, longitude } = position.coords;
+            currentPosition = { latitude, longitude };
+            gpsIndicator.innerHTML = `
+                <i class="fas fa-map-marker-alt gps-active"></i>
+                <span>Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}</span>
+            `;
             
-            watchPositionId = navigator.geolocation.watchPosition(
-                position => {
-                    const { latitude, longitude } = position.coords;
-                    currentPosition = { latitude, longitude };
-                    gpsIndicator.innerHTML = `
-                        <i class="fas fa-map-marker-alt gps-active"></i>
-                        <span>Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}</span>
-                    `;
-                },
-                error => {
-                    console.error('Geolocation error:', error);
-                    gpsIndicator.innerHTML = `
-                        <i class="fas fa-map-marker-alt gps-inactive"></i>
-                        <span>Location unavailable</span>
-                    `;
-                },
-                { 
-                    enableHighAccuracy: true,
-                    maximumAge: 10000,
-                    timeout: 5000 
-                }
-            );
+            // Update map with current position
+            updateMapWithCurrentPosition();
+        },
+        error => {
+            console.error('Geolocation error:', error);
+            gpsIndicator.innerHTML = `
+                <i class="fas fa-map-marker-alt gps-inactive"></i>
+                <span>Location unavailable</span>
+            `;
+        },
+        { 
+            enableHighAccuracy: true,
+            maximumAge: 10000,
+            timeout: 5000 
         }
+    );
+}
 
         function stopWatchingLocation() {
             if (watchPositionId) {
@@ -2066,12 +2235,12 @@
         }
 
         function login() {
-            window.location.href = 'auth.html';
+            window.location.href = 'index.html';
         }
 
         function logout() {
             localStorage.removeItem('auth_user');
-            window.location.href = 'auth.html';
+            window.location.href = 'index.html';
         }
 
         function saveProfile() {
@@ -2227,10 +2396,10 @@
                     requiredDocs.innerHTML = `
                         <p>Required documents:</p>
                         <ul class="list-disc pl-5">
-                            <li>South African ID</li>
+                            <li>South African ID copy</li>
                             <li>Proof of income</li>
                             <li>Proof of residence</li>
-                            <li>Bank statement</li>
+                            <li>Bank statement(6-months)</li>
                         </ul>
                     `;
                     break;
@@ -2248,7 +2417,7 @@
                     requiredDocs.innerHTML = `
                         <p>Required documents:</p>
                         <ul class="list-disc pl-5">
-                            <li>South African ID</li>
+                            <li>South African ID copy</li>
                             <li>Matric certificate</li>
                             <li>Proof of unemployment</li>
                             <li>CV/resume</li>
@@ -2259,10 +2428,10 @@
                     requiredDocs.innerHTML = `
                         <p>Required documents:</p>
                         <ul class="list-disc pl-5">
-                            <li>South African ID</li>
+                            <li>South African ID copy</li>
                             <li>Business plan</li>
                             <li>Company registration documents</li>
-                            <li>Financial statements</li>
+                            <li>Financial statements(6-months)</li>
                         </ul>
                     `;
                     break;
