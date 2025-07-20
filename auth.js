@@ -1,14 +1,14 @@
 // Redirect to auth.html for login/register actions
 function login() {
-    window.location.href = 'auth.html';
+    window.location.href = 'index.html';
 }
 
 function register() {
-    window.location.href = 'auth.html#signup-step1';
+    window.location.href = 'index.html#signup-step1';
 }
 
 function resetPassword() {
-    window.location.href = 'auth.html';
+    window.location.href = 'index.html';
 }
 
 // Profile management
@@ -30,7 +30,7 @@ function saveProfile() {
 // Logout function
 function logout() {
     localStorage.removeItem('auth_user');
-    window.location.href = 'auth.html';
+    window.location.href = 'index.html';
 }
 
 // Initialize profile data
